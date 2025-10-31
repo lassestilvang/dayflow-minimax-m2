@@ -383,4 +383,97 @@ export const helperUtils = {
       },
     })
   },
+
+  // Mock HTTP request/response for API testing
+  createMockRequest(overrides: any = {}) {
+    return {
+      method: 'GET',
+      url: '/',
+      params: {},
+      query: {},
+      body: null,
+      headers: {},
+      cookies: {},
+      ip: '127.0.0.1',
+      user: null,
+      files: [],
+      get: vi.fn((name: string) => overrides.headers?.[name.toLowerCase()]),
+      json: vi.fn(),
+      text: vi.fn(),
+      ...overrides,
+    }
+  },
+
+  createMockResponse() {
+    const response = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+      text: vi.fn().mockReturnThis(),
+      html: vi.fn().mockReturnThis(),
+      cookie: vi.fn().mockReturnThis(),
+      setHeader: vi.fn().mockReturnThis(),
+      getHeader: vi.fn().mockReturnThis(),
+      redirect: vi.fn().mockReturnThis(),
+      end: vi.fn().mockReturnThis(),
+      send: vi.fn().mockReturnThis(),
+      locals: {},
+      headersSent: false,
+    }
+
+    return response
+  },
+
+  // Mock Next.js API route context
+  createApiRouteContext(request: any, response: any) {
+    return {
+      params: request.params,
+      searchParams: new URLSearchParams(request.searchParams),
+      request,
+      response,
+    }
+  },
+
+  // Mock user session for authentication tests
+  createMockSession(user: any = { id: 'test-user', email: 'test@example.com' }) {
+    return {
+      user,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      accessToken: 'mock-access-token',
+      refreshToken: 'mock-refresh-token',
+    }
+  },
+
+  // Mock API rate limiting
+  createRateLimiter(requests: number = 100, windowMs: number = 60000) {
+    const calls: Array<{ ip: string; timestamp: number }> = []
+    
+    return {
+      isAllowed: (ip: string) => {
+        const now = Date.now()
+        const cutoff = now - windowMs
+        
+        // Remove old calls
+        while (calls.length > 0 && calls[0].timestamp < cutoff) {
+          calls.shift()
+        }
+        
+        // Count recent calls from this IP
+        const recentCalls = calls.filter(call => call.ip === ip)
+        
+        if (recentCalls.length >= requests) {
+          return false
+        }
+        
+        calls.push({ ip, timestamp: now })
+        return true
+      },
+      getRemainingRequests: (ip: string) => {
+        const now = Date.now()
+        const cutoff = now - windowMs
+        const recentCalls = calls.filter(call => call.ip === ip && call.timestamp >= cutoff)
+        return Math.max(0, requests - recentCalls.length)
+      },
+      getResetTime: () => new Date(Date.now() + windowMs),
+    }
+  },
 }
