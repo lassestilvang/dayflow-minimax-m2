@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect } from 'react'
 import { DashboardHeader } from '@/components/dashboard-header'
 import { TaskList } from '@/components/task-list'
@@ -5,7 +7,7 @@ import { WeeklyCalendar } from '@/components/calendar/WeeklyCalendar'
 import { StatsCards } from '@/components/stats-cards'
 import { useWeeklyCalendarStore } from '@/stores/calendarStore'
 
-export default function DashboardPage() {
+export default function Dashboard() {
   const { initializeWithDemoData } = useWeeklyCalendarStore()
 
   // Initialize with demo data on first load
