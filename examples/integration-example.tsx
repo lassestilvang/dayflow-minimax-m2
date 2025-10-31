@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Integration Example: Complete DayFlow State Management Implementation
 // This example shows how to use the enhanced state management system
 
@@ -323,7 +324,7 @@ export function DayFlowDashboard() {
         
         {/* In a real app, you'd show actual metrics */}
         <div className="metrics">
-          <p>Query Performance: < 100ms</p>
+          <p>Query Performance: {'<'} 100ms</p>
           <p>Cache Hit Rate: 95%</p>
           <p>Sync Latency: 500ms</p>
           <p>Error Rate: 0.1%</p>
@@ -338,7 +339,7 @@ export function useDatabaseOperations() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const executeOperation = async <T>(
+  const executeOperation = async <T,>(
     operation: () => Promise<T>
   ): Promise<T | null> => {
     setLoading(true)

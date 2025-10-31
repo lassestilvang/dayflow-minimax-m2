@@ -390,7 +390,7 @@ test.describe('User Workflows', () => {
         
         // Check for sync status
         const syncStatus = page.locator('[data-testid="sync-status"], .sync-status')
-        await expect(syncStatus).toContainText(/syncing|sync/i', { timeout: 10000 })
+        await expect(syncStatus).toContainText(/syncing|sync/i, { timeout: 10000 })
       } else {
         test.skip(true, 'Sync button not found')
       }

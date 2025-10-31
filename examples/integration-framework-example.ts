@@ -271,8 +271,8 @@ export async function exampleMultiServiceSync(userId: string) {
           displayName: name,
           isActive: true,
           accessToken: `${name}_access_token`,
-          refreshToken: undefined,
-          tokenExpiresAt: undefined,
+          refreshToken: null,
+          tokenExpiresAt: null,
           syncSettings: {
             autoSync: true,
             syncInterval: 15,
