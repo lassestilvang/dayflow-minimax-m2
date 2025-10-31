@@ -68,7 +68,7 @@ export function IntegrationsPage({ userId }: { userId: string }) {
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [loadIntegrations])
 
   const loadIntegrations = async () => {
     try {
@@ -304,7 +304,7 @@ export function IntegrationsPage({ userId }: { userId: string }) {
             <div>
               <p className="font-medium">Connecting a Service</p>
               <p className="text-sm text-muted-foreground">
-                Click "Connect" on any service to start the OAuth authorization flow
+                Click &quot;Connect&quot; on any service to start the OAuth authorization flow
               </p>
             </div>
           </div>

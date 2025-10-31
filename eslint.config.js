@@ -1,9 +1,12 @@
-export default [
+import next from 'eslint-config-next';
+
+const config = [
+  ...next,
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    extends: ['next/core-web-vitals'],
     rules: {
       // Custom rules can be added here
     },
   },
-]
+];
+
+export default config;
