@@ -3,30 +3,30 @@
 ## Build/Lint/Test Commands
 
 ### Development
-- `npm run dev` - Start development server
-- `npm run build` - Build for production  
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript type checking
+- `bun run dev` - Start development server
+- `bun run build` - Build for production  
+- `bun run start` - Start production server
+- `bun run lint` - Run ESLint
+- `bun run type-check` - Run TypeScript type checking
 
 ### Testing
-- `npm run test` - Run all tests in watch mode
-- `npm run test:unit` - Run unit tests once
-- `npm run test:integration` - Run integration tests once
-- `npm run test:e2e` - Run end-to-end tests
-- `npm run test:coverage` - Run tests with coverage
-- `npm run test:watch` - Watch mode for all tests
-- `npm run test:run` - Run all tests once
+- `bun run test` - Run all tests in watch mode
+- `bun run test:unit` - Run unit tests once
+- `bun run test:integration` - Run integration tests once
+- `bun run test:e2e` - Run end-to-end tests
+- `bun run test:coverage` - Run tests with coverage
+- `bun run test:watch` - Watch mode for all tests
+- `bun run test:run` - Run all tests once
 
 ### Single Test
 - `vitest run path/to/test.test.ts` - Run specific test file
 - `vitest --run path/to/test.test.ts` - Alternative syntax
 
 ### Database
-- `npm run db:generate` - Generate migrations
-- `npm run db:migrate` - Apply migrations
-- `npm run db:push` - Push schema changes
-- `npm run db:studio` - Open Drizzle Studio
+- `bun run db:generate` - Generate migrations
+- `bun run db:migrate` - Apply migrations
+- `bun run db:push` - Push schema changes
+- `bun run db:studio` - Open Drizzle Studio
 
 ## Code Style Guidelines
 
