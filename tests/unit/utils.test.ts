@@ -49,6 +49,9 @@ const completeEventOrTask = (obj: any) => ({
   recurrence: obj.recurrence ?? { type: 'none' as const },
   reminder: obj.reminder ?? { enabled: false, minutesBefore: 0 },
 })
+
+// Helper to wrap all EventOrTask objects
+const createEventOrTask = (obj: any): EventOrTask => completeEventOrTask(obj)
 // Mock date-fns functions
 vi.mock('date-fns', () => ({
   format: vi.fn(),
@@ -178,7 +181,7 @@ describe('Date Utilities', () => {
     it('should calculate event duration in minutes', () => {
       const startTime = new Date('2024-01-01T10:00:00Z')
       const endTime = new Date('2024-01-01T11:30:00Z')
-      const event: EventOrTask = {
+      const event: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'Test Event',
         startTime,
@@ -189,7 +192,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       vi.mocked(differenceInMinutes).mockReturnValueOnce(90)
       
@@ -200,7 +203,7 @@ describe('Date Utilities', () => {
     })
 
     it('should return 0 for events without time data', () => {
-      const event1: EventOrTask = {
+      const event1: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'Test Event 1',
         status: 'pending' as const,
@@ -209,9 +212,9 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
-      const event2: EventOrTask = {
+      const event2: EventOrTask = completeEventOrTask({
         id: '2',
         title: 'Test Event 2',
         status: 'pending' as const,
@@ -220,7 +223,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       expect(getEventDurationInMinutes(event1)).toBe(0)
       expect(getEventDurationInMinutes(event2)).toBe(0)
@@ -229,7 +232,7 @@ describe('Date Utilities', () => {
     it('should calculate event height correctly', () => {
       const startTime = new Date('2024-01-01T10:00:00Z')
       const endTime = new Date('2024-01-01T12:00:00Z')
-      const event: EventOrTask = {
+      const event: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'Test Event',
         startTime,
@@ -240,7 +243,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       vi.mocked(differenceInMinutes).mockReturnValueOnce(120) // 2 hours
       const pixelsPerHour = 60
@@ -253,7 +256,7 @@ describe('Date Utilities', () => {
     it('should enforce minimum event height', () => {
       const startTime = new Date('2024-01-01T10:00:00Z')
       const endTime = new Date('2024-01-01T10:15:00Z')
-      const event: EventOrTask = {
+      const event: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'Test Event',
         startTime,
@@ -264,7 +267,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       vi.mocked(differenceInMinutes).mockReturnValueOnce(15) // 15 minutes
       const pixelsPerHour = 60
@@ -276,7 +279,7 @@ describe('Date Utilities', () => {
 
     it('should calculate event top position', () => {
       const startTime = new Date('2024-01-01T10:30:00Z')
-      const event: EventOrTask = {
+      const event: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'Test Event',
         startTime,
@@ -286,7 +289,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       const settings = { ...DEFAULT_VIEW_SETTINGS, startHour: 6 }
       
       vi.mocked(getHours).mockReturnValueOnce(10)
@@ -299,7 +302,7 @@ describe('Date Utilities', () => {
 
     it('should handle events starting before start hour', () => {
       const startTime = new Date('2024-01-01T05:30:00Z')
-      const event: EventOrTask = {
+      const event: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'Test Event',
         startTime,
@@ -309,7 +312,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       const settings = { ...DEFAULT_VIEW_SETTINGS, startHour: 6 }
       
       vi.mocked(getHours).mockReturnValueOnce(5)

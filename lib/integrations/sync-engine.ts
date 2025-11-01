@@ -3,7 +3,7 @@
  * Handles two-way synchronization between DayFlow and external services
  */
 
-import { BaseIntegration, SyncResult, SyncConflict, ExternalTask, ExternalEvent, Task, CalendarEvent, ConflictResolution } from './base'
+import { BaseIntegration, SyncResult, SyncConflict, ExternalTask, ExternalEvent, ConflictResolution } from './base'
 import { DataTransformer, ConflictDetector, RetryHandler, ValidationUtils } from './utils'
 import { UserIntegration, SyncOperation, SyncQueueItem, ExternalItem } from '../db/integrations-schema'
 import { taskRepository, calendarEventRepository } from '../data-access'
@@ -18,6 +18,9 @@ import { GoogleCalendarIntegration } from './google-calendar'
 import { OutlookCalendarIntegration } from './outlook'
 import { AppleCalendarIntegration } from './apple-calendar'
 import { FastmailCalendarIntegration } from './fastmail'
+
+// Import Task and CalendarEvent from schema
+import type { Task, CalendarEvent } from '../db/schema'
 
 interface SyncJob {
   id: string
@@ -303,8 +306,8 @@ export class SyncEngine {
       const integration = await this.createIntegration(userIntegration)
       
       // Determine sync scope
-      const shouldSyncTasks = options.syncTasks !== false && userIntegration.syncSettings.syncTasks
-      const shouldSyncEvents = options.syncEvents !== false && userIntegration.syncSettings.syncEvents
+      const shouldSyncTasks = options.syncTasks !== false && (userIntegration.syncSettings?.syncTasks ?? true)
+      const shouldSyncEvents = options.syncEvents !== false && (userIntegration.syncSettings?.syncEvents ?? true)
 
       // Create sync result
       const result: SyncResult = {
@@ -333,7 +336,7 @@ export class SyncEngine {
       }
 
       // Apply conflict resolution if configured
-      if (userIntegration.syncSettings.conflictResolution !== 'manual') {
+      if (userIntegration.syncSettings?.conflictResolution && userIntegration.syncSettings.conflictResolution !== 'manual') {
         await this.applyAutoConflictResolution(job, result, userIntegration.syncSettings.conflictResolution)
       }
 
@@ -363,7 +366,7 @@ export class SyncEngine {
       const integration = await this.createIntegration(userIntegration)
       const result = await this.syncTasks(integration, userIntegration, options)
       
-      if (userIntegration.syncSettings.conflictResolution !== 'manual') {
+      if (userIntegration.syncSettings?.conflictResolution && userIntegration.syncSettings.conflictResolution !== 'manual') {
         await this.applyAutoConflictResolution(job, result, userIntegration.syncSettings.conflictResolution)
       }
 
@@ -392,7 +395,7 @@ export class SyncEngine {
       const integration = await this.createIntegration(userIntegration)
       const result = await this.syncEvents(integration, userIntegration, options)
       
-      if (userIntegration.syncSettings.conflictResolution !== 'manual') {
+      if (userIntegration.syncSettings?.conflictResolution && userIntegration.syncSettings.conflictResolution !== 'manual') {
         await this.applyAutoConflictResolution(job, result, userIntegration.syncSettings.conflictResolution)
       }
 
@@ -468,7 +471,7 @@ export class SyncEngine {
         }
       } catch (error) {
         result.errors.push({
-          type: 'sync_error',
+          type: 'api_error' as const,
           message: error instanceof Error ? error.message : 'Unknown error',
           item: externalTask
         })
@@ -536,7 +539,7 @@ export class SyncEngine {
         }
       } catch (error) {
         result.errors.push({
-          type: 'sync_error',
+          type: 'api_error' as const,
           message: error instanceof Error ? error.message : 'Unknown error',
           item: externalEvent
         })
@@ -676,7 +679,7 @@ export class SyncEngine {
   private isUpdateNeeded(dayflowItem: Task | CalendarEvent, externalItem: ExternalTask | ExternalEvent): boolean {
     // Check if the external item is newer
     const dayflowUpdated = dayflowItem.updatedAt.getTime()
-    const externalUpdated = externalItem.updatedAt.getTime()
+    const externalUpdated = externalItem.updatedAt?.getTime() || 0
     
     return externalUpdated > dayflowUpdated
   }
@@ -736,7 +739,7 @@ export class SyncEngine {
     for (const conflict of result.conflicts) {
       switch (strategy) {
         case 'latest':
-          const latestItem = conflict.dayflowItem.updatedAt >= conflict.externalItem.updatedAt
+          const latestItem = (conflict.dayflowItem.updatedAt.getTime() >= (conflict.externalItem.updatedAt?.getTime() || 0))
             ? conflict.dayflowItem
             : conflict.externalItem
           await this.applyResolution(job, conflict, latestItem === conflict.dayflowItem ? 'keep_dayflow' : 'keep_external')
@@ -753,6 +756,7 @@ export class SyncEngine {
   }
 
   private async applyResolution(
+    job: SyncJob,
     conflict: SyncConflict,
     resolution: 'keep_dayflow' | 'keep_external' | 'merge' | 'manual'
   ): Promise<void> {

@@ -3,7 +3,18 @@
  * Common utilities for rate limiting, error handling, data transformation, and sync operations
  */
 
-import { BaseIntegration, IntegrationError, RateLimitError, ValidationError, ExternalTask, ExternalEvent, Task, CalendarEvent } from './base'
+import { BaseIntegration, IntegrationError, RateLimitError, ValidationError, ExternalTask, ExternalEvent } from './base'
+
+// Import Task and CalendarEvent from schema
+import type { Task, CalendarEvent } from '../db/schema'
+
+// Define AuthenticationError class
+class AuthenticationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'AuthenticationError'
+  }
+}
 
 // Rate Limiting
 export class RateLimiter {
@@ -389,7 +400,12 @@ export class RetryHandler {
         }
 
         // Don't retry on validation errors or authentication errors
-        if (error instanceof ValidationError || error instanceof AuthenticationError) {
+        if (error instanceof ValidationError || error instanceof (IntegrationError as any)) {
+          throw error
+        }
+
+        // Don't retry on authentication errors
+        if ((error as any).message?.includes('authentication') || (error as any).message?.includes('unauthorized')) {
           throw error
         }
 
