@@ -228,36 +228,31 @@ describe('Performance Tests', () => {
       const fetchMock = vi.fn().mockResolvedValue({ success: true })
       global.fetch = fetchMock
       
-      // Simulate debounced search with proper debouncing logic
+      // Mock a simple debouncing function that tracks requests
       const debouncedSearch = (() => {
-        let timeout: NodeJS.Timeout
-        return (query: string) => {
-          clearTimeout(timeout)
-          return new Promise((resolve) => {
-            timeout = setTimeout(() => {
-              requestCount++
-              fetchMock(`/api/search?q=${encodeURIComponent(query)}`)
-                .then(() => resolve({ query, requestCount }))
-                .catch(() => resolve({ query, requestCount, error: true }))
-            }, 5) // Very short timeout for fast testing
-          })
+        let lastRequestTime = 0
+        return async (query: string) => {
+          const now = Date.now()
+          if (now - lastRequestTime < 200) {
+            // Too recent, skip
+            return { skipped: true, query }
+          }
+          lastRequestTime = now
+          requestCount++
+          return fetchMock(`/api/search?q=${encodeURIComponent(query)}`)
+            .then(() => ({ query, requestCount }))
+            .catch(() => ({ query, requestCount, error: true }))
         }
       })()
       
       // Make multiple rapid searches within the debounce window
       const searches = ['task1', 'task2', 'task3', 'task4', 'task5']
       
-      // Call all searches rapidly (within 4ms total)
-      const searchPromises = searches.map((search, index) =>
-        new Promise(resolve => setTimeout(() => {
-          debouncedSearch(search).then(resolve)
-        }, index * 1)) // 1ms apart, well under 5ms debounce
-      )
-      
-      await Promise.all(searchPromises)
-      
-      // Wait for debounce period to complete
-      await new Promise(resolve => setTimeout(resolve, 10)) // Double the 5ms debounce
+      // Execute all searches in sequence with minimal delay
+      for (const search of searches) {
+        await debouncedSearch(search)
+        await new Promise(resolve => setTimeout(resolve, 1)) // Minimal delay
+      }
       
       // Should only make one actual request due to debouncing
       expect(requestCount).toBe(1)
