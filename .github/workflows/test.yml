@@ -17,32 +17,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        bun-version: latest
     
     - name: Install dependencies
-      run: npm ci
+      run: bun install
     
     - name: Run type checking
-      run: npm run type-check
+      run: bun run type-check
     
     - name: Run linting
-      run: npm run lint
+      run: bun run lint
     
     - name: Install Playwright browsers
-      run: npx playwright install --with-deps
+      run: bunx playwright install --with-deps
     
     - name: Build application
-      run: npm run build
+      run: bun run build
     
     - name: Run unit and integration tests
-      run: npm run test:coverage
+      run: bun run test:coverage
     
     - name: Run E2E tests
-      run: npm run test:e2e
+      run: bun run test:e2e
     
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
@@ -68,20 +67,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
       with:
-        node-version: '20.x'
-        cache: 'npm'
+        bun-version: latest
     
     - name: Install dependencies
-      run: npm ci
+      run: bun install
     
     - name: Build application
-      run: npm run build
+      run: bun run build
     
     - name: Run performance tests
-      run: npm run test:performance
+      run: bun run test:performance
     
     - name: Upload performance results
       uses: actions/upload-artifact@v4
@@ -96,20 +94,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
       with:
-        node-version: '20.x'
-        cache: 'npm'
+        bun-version: latest
     
     - name: Install dependencies
-      run: npm ci
+      run: bun install
     
     - name: Run security audit
-      run: npm audit --audit-level high
+      run: bun audit
     
     - name: Run vulnerability scan
-      run: npx audit-ci --moderate
+      run: bunx audit-ci --moderate
 
   accessibility:
     runs-on: ubuntu-latest
@@ -118,27 +115,26 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
       with:
-        node-version: '20.x'
-        cache: 'npm'
+        bun-version: latest
     
     - name: Install dependencies
-      run: npm ci
+      run: bun install
     
     - name: Install Playwright browsers
-      run: npx playwright install --with-deps
+      run: bunx playwright install --with-deps
     
     - name: Start application
-      run: npm run build && npm run start &
+      run: bun run build && bun run start &
       shell: bash
     
     - name: Wait for application
-      run: npx wait-on http://localhost:3000
+      run: bunx wait-on http://localhost:3000
     
     - name: Run accessibility tests
-      run: npx playwright test --project=chromium tests/accessibility
+      run: bunx playwright test --project=chromium tests/accessibility
     
     - name: Upload accessibility results
       uses: actions/upload-artifact@v4
