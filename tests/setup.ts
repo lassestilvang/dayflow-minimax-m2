@@ -100,10 +100,14 @@ global.sessionStorage = sessionStorageMock
 global.fetch = vi.fn()
 
 // Mock crypto
-global.crypto = {
-  ...global.crypto,
-  randomUUID: vi.fn(() => 'mock-uuid'),
-}
+Object.defineProperty(global, 'crypto', {
+  value: {
+    ...global.crypto,
+    randomUUID: vi.fn(() => 'mock-uuid'),
+  },
+  writable: true,
+  configurable: true,
+})
 
 // Setup test database environment
 process.env.NODE_ENV = 'test'

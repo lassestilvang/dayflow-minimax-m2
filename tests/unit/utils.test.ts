@@ -22,7 +22,7 @@ import {
   getDurationText,
   DEFAULT_VIEW_SETTINGS,
 } from '@/lib/date-utils'
-import { testUtils } from '@/tests/utils'
+// import { testUtils } from '@/tests/utils'
 
 // Mock date-fns functions
 vi.mock('date-fns', () => ({
@@ -83,11 +83,11 @@ describe('Date Utilities', () => {
       const { format, startOfWeek, endOfWeek, addDays, getDay } = require('date-fns')
       
       // Mock the dependencies
-      format.mockReturnValue('Monday')
-      startOfWeek.mockReturnValue(new Date('2024-01-01'))
-      endOfWeek.mockReturnValue(new Date('2024-01-07'))
-      addDays.mockReturnValue(new Date('2024-01-02'))
-      getDay.mockReturnValue(1)
+      format.mockReturnValueOnce('Monday')
+      startOfWeek.mockReturnValueOnce(new Date('2024-01-01'))
+      endOfWeek.mockReturnValueOnce(new Date('2024-01-07'))
+      addDays.mockReturnValueOnce(new Date('2024-01-02'))
+      getDay.mockReturnValueOnce(1)
       
       const week = getCurrentWeek()
       
@@ -100,7 +100,7 @@ describe('Date Utilities', () => {
 
     it('should get previous week correctly', () => {
       const { subWeeks } = require('date-fns')
-      const currentWeek = testUtils.createMockWeek()
+      const currentWeek = createMockWeek()
       
       subWeeks.mockReturnValue(new Date('2023-12-25'))
       const previousWeek = getPreviousWeek(currentWeek)
@@ -112,7 +112,7 @@ describe('Date Utilities', () => {
 
     it('should get next week correctly', () => {
       const { addWeeks } = require('date-fns')
-      const currentWeek = testUtils.createMockWeek()
+      const currentWeek = createMockWeek()
       
       addWeeks.mockReturnValue(new Date('2024-01-08'))
       const nextWeek = getNextWeek(currentWeek)

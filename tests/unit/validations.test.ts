@@ -8,10 +8,10 @@ import {
 } from '@/lib/validations/schemas'
 import {
   taskSchema,
-  eventSchema,
+  calendarEventSchema,
   userSchema,
   taskFormDataSchema,
-  eventFormDataSchema,
+  calendarEventFormDataSchema,
 } from '@/lib/validations/schemas'
 
 describe('Validation Schemas', () => {
@@ -472,10 +472,10 @@ describe('Validation Schemas', () => {
     it('should create schemas correctly', () => {
       expect(userSchema).toBeDefined()
       expect(taskSchema).toBeDefined()
-      expect(eventSchema).toBeDefined()
+      expect(calendarEventSchema).toBeDefined()
       expect(userSchema.shape.email).toBeDefined()
       expect(taskSchema.shape.title).toBeDefined()
-      expect(eventSchema.shape.startTime).toBeDefined()
+      expect(calendarEventSchema.shape.startTime).toBeDefined()
     })
 
     it('should have correct validation methods', () => {
