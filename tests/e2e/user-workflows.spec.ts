@@ -252,12 +252,14 @@ test.describe('User Workflows', () => {
       if (await nextWeekButton.isVisible()) {
         // Go to next week
         await nextWeekButton.click()
+        const weekDisplay = page.locator('[data-testid="week-display"], .week-display')
         await expect(weekDisplay).toBeVisible()
       }
       
       if (await currentWeekButton.isVisible()) {
         // Go to current week
         await currentWeekButton.click()
+        const weekDisplay = page.locator('[data-testid="week-display"], .week-display')
         await expect(weekDisplay).toBeVisible()
       }
     })
@@ -471,9 +473,7 @@ test.describe('User Workflows', () => {
       
       // Add delay to network requests
       await page.route('**/*', (route) => {
-        route.continue({
-          delay: 1000, // 1 second delay
-        })
+        setTimeout(() => route.continue(), 1000)
       })
       
       await page.goto('/dashboard')
