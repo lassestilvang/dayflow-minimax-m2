@@ -6,6 +6,16 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
+    include: [
+      'tests/unit/**/*.test.ts',
+      'tests/integration/**/*.test.ts',
+      'tests/perf/**/*.test.ts',
+      'tests/data-layer.test.ts'
+    ],
+    exclude: [
+      'tests/e2e/**', // Exclude E2E tests
+      '**/*.spec.ts' // Exclude Playwright test files
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
@@ -18,6 +28,8 @@ export default defineConfig({
         '**/*.config.{js,ts}',
         '**/mocks/**',
         '**/__mocks__/**',
+        'tests/e2e/**',
+        '**/*.spec.ts'
       ],
       thresholds: {
         global: {
