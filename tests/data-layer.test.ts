@@ -952,7 +952,7 @@ describe('Performance Tests', () => {
       updates: { status: 'completed' },
     }
 
-    await taskRepository.bulkUpdate(bulkData)
+    await taskRepository.bulkUpdate(bulkData as any)
 
     const endTime = Date.now()
     const duration = endTime - startTime
