@@ -509,7 +509,7 @@ export class AppleCalendarIntegration extends BaseIntegrationService {
     const endTime = event.endDate
     const isAllDay = event.allDay || false
     const location = event.location
-    const attendees = event.attendees?.map(attendee => ({
+    const attendees = event.attendees?.map((attendee: any) => ({
       email: attendee.email || attendee.cua.replace('mailto:', ''),
       name: attendee.name,
       status: this.mapCalDAVResponseStatus(attendee.status)

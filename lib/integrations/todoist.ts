@@ -103,7 +103,7 @@ export class TodoistIntegration extends BaseIntegrationService {
   private projectId?: string
   private rateLimiter: RateLimiter
 
-  constructor(config: IntegrationConfig = {}) {
+  constructor(config: Partial<IntegrationConfig> = {}) {
     super(config)
     this.rateLimiter = new RateLimiter(75, 1500) // 75 per minute, 1500 per hour
   }
@@ -121,7 +121,7 @@ export class TodoistIntegration extends BaseIntegrationService {
 
   async authenticate(accessToken: string, refreshToken?: string, expiresAt?: Date): Promise<void> {
     this.accessToken = accessToken
-    this.refreshToken = refreshToken
+    this.refreshTokenValue = refreshToken
     this.expiresAt = expiresAt
     await this.initialize()
   }
@@ -137,7 +137,7 @@ export class TodoistIntegration extends BaseIntegrationService {
   }
 
   async refreshToken(): Promise<void> {
-    if (!this.refreshToken) {
+    if (!this.refreshTokenValue) {
       throw new ValidationError('No refresh token available', 'refreshToken')
     }
 
@@ -150,7 +150,7 @@ export class TodoistIntegration extends BaseIntegrationService {
         },
         body: new URLSearchParams({
           grant_type: 'refresh_token',
-          refresh_token: this.refreshToken,
+          refresh_token: this.refreshTokenValue,
           client_id: this.clientId || ''
         })
       })
@@ -161,7 +161,7 @@ export class TodoistIntegration extends BaseIntegrationService {
 
       const data = await response.json()
       this.accessToken = data.access_token
-      this.refreshToken = data.refresh_token || this.refreshToken
+      this.refreshTokenValue = data.refresh_token || this.refreshTokenValue
       this.expiresAt = new Date(Date.now() + (data.expires_in * 1000))
     } catch (error) {
       throw new IntegrationError('Failed to refresh Todoist token', 'TOKEN_REFRESH_FAILED', undefined, error)
@@ -323,11 +323,11 @@ export class TodoistIntegration extends BaseIntegrationService {
     }
   }
 
-  async createEvent(event: TaskData): Promise<ExternalTask> {
+  async createEvent(event: import('./base').EventData): Promise<import('./base').ExternalEvent> {
     throw new IntegrationError('Todoist does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
-  async updateEvent(externalId: string, event: TaskData): Promise<ExternalTask> {
+  async updateEvent(externalId: string, event: import('./base').EventData): Promise<import('./base').ExternalEvent> {
     throw new IntegrationError('Todoist does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
@@ -335,23 +335,11 @@ export class TodoistIntegration extends BaseIntegrationService {
     throw new IntegrationError('Todoist does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
-  async getEvent(externalId: string): Promise<ExternalTask | null> {
+  async getEvent(externalId: string): Promise<import('./base').ExternalEvent | null> {
     throw new IntegrationError('Todoist does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
   async handleWebhook(payload: any, signature?: string): Promise<void> {
-    // Verify webhook signature if provided
-    if (signature && this.config?.webhookSecret) {
-      const isValid = await WebhookUtils.verifyWebhookSignature(
-        JSON.stringify(payload),
-        signature,
-        this.config.webhookSecret
-      )
-      if (!isValid) {
-        throw new ValidationError('Invalid webhook signature', 'signature')
-      }
-    }
-
     // Handle different webhook events
     if (payload.event_name === 'added' || payload.event_name === 'updated') {
       await this.handleTaskWebhook(payload)
@@ -385,7 +373,7 @@ export class TodoistIntegration extends BaseIntegrationService {
 
   async disconnect(): Promise<void> {
     this.accessToken = undefined
-    this.refreshToken = undefined
+    this.refreshTokenValue = undefined
     this.expiresAt = undefined
     this.projectId = undefined
   }

@@ -13,7 +13,12 @@ if (!connectionString) {
 const sql = neon(connectionString)
 
 // Create Drizzle instance with schema
-export const db = drizzle(sql, { schema }) as any
+// @ts-ignore - Type compatibility issue between drizzle-orm and @neondatabase/serverless versions
+export const db = drizzle(sql, { 
+  schema, 
+  mode: 'default',
+  logger: process.env.NODE_ENV === 'development'
+})
 
 // Export database schema types
 export type Database = typeof schema

@@ -8,10 +8,12 @@ import { IntegrationError, ValidationError, OAuthUtils } from './utils'
 interface OAuthConfig {
   clientId: string
   clientSecret?: string
+  serviceName: string
   authUrl: string
   tokenUrl: string
   redirectUri: string
   scopes: string[]
+  refreshToken?: boolean
   stateParameter?: string
   codeChallenge?: string
   codeVerifier?: string
@@ -235,46 +237,58 @@ export class OAuthManager {
     const configs: Record<string, OAuthConfig> = {
       notion: {
         clientId: process.env.NOTION_CLIENT_ID || '',
+        serviceName: 'notion',
         authUrl: 'https://api.notion.com/v1/oauth/authorize',
         tokenUrl: 'https://api.notion.com/v1/oauth/token',
         redirectUri: process.env.NOTION_REDIRECT_URI || '',
-        scopes: ['read', 'write']
+        scopes: ['read', 'write'],
+        refreshToken: false
       },
       clickup: {
         clientId: process.env.CLICKUP_CLIENT_ID || '',
+        serviceName: 'clickup',
         authUrl: 'https://app.clickup.com/api',
         tokenUrl: 'https://api.clickup.com/api/v2/oauth/token',
         redirectUri: process.env.CLICKUP_REDIRECT_URI || '',
-        scopes: ['read', 'write']
+        scopes: ['read', 'write'],
+        refreshToken: true
       },
       linear: {
         clientId: process.env.LINEAR_CLIENT_ID || '',
+        serviceName: 'linear',
         authUrl: 'https://linear.app/oauth/authorize',
         tokenUrl: 'https://api.linear.app/oauth/token',
         redirectUri: process.env.LINEAR_REDIRECT_URI || '',
-        scopes: ['read', 'write']
+        scopes: ['read', 'write'],
+        refreshToken: false
       },
       todoist: {
         clientId: process.env.TODOIST_CLIENT_ID || '',
+        serviceName: 'todoist',
         authUrl: 'https://todoist.com/oauth2/authorize',
         tokenUrl: 'https://todoist.com/oauth2/access_token',
         redirectUri: process.env.TODOIST_REDIRECT_URI || '',
-        scopes: ['read', 'write']
+        scopes: ['read', 'write'],
+        refreshToken: true
       },
       'google-calendar': {
         clientId: process.env.GOOGLE_CLIENT_ID || '',
+        serviceName: 'google-calendar',
         authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
         tokenUrl: 'https://oauth2.googleapis.com/token',
         redirectUri: process.env.GOOGLE_REDIRECT_URI || '',
-        scopes: ['https://www.googleapis.com/auth/calendar']
+        scopes: ['https://www.googleapis.com/auth/calendar'],
+        refreshToken: true
       },
       outlook: {
         clientId: process.env.OUTLOOK_CLIENT_ID || '',
         clientSecret: process.env.OUTLOOK_CLIENT_SECRET || '',
+        serviceName: 'outlook',
         authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
         tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
         redirectUri: process.env.OUTLOOK_REDIRECT_URI || '',
-        scopes: ['Calendars.ReadWrite']
+        scopes: ['Calendars.ReadWrite'],
+        refreshToken: true
       }
     }
 

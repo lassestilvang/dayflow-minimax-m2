@@ -117,7 +117,7 @@ export class ClickUpIntegration extends BaseIntegrationService {
 
   async authenticate(accessToken: string, refreshToken?: string, expiresAt?: Date): Promise<void> {
     this.accessToken = accessToken
-    this.refreshToken = refreshToken as string | undefined
+    this.refreshTokenValue = refreshToken as string | undefined
     this.expiresAt = expiresAt
     await this.initialize()
   }
@@ -258,11 +258,11 @@ export class ClickUpIntegration extends BaseIntegrationService {
     }
   }
 
-  async createEvent(event: TaskData): Promise<ExternalTask> {
+  async createEvent(event: import('./base').EventData): Promise<import('./base').ExternalEvent> {
     throw new IntegrationError('ClickUp does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
-  async updateEvent(externalId: string, event: TaskData): Promise<ExternalTask> {
+  async updateEvent(externalId: string, event: import('./base').EventData): Promise<import('./base').ExternalEvent> {
     throw new IntegrationError('ClickUp does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
@@ -270,7 +270,7 @@ export class ClickUpIntegration extends BaseIntegrationService {
     throw new IntegrationError('ClickUp does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
-  async getEvent(externalId: string): Promise<ExternalTask | null> {
+  async getEvent(externalId: string): Promise<import('./base').ExternalEvent | null> {
     throw new IntegrationError('ClickUp does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
@@ -307,7 +307,7 @@ export class ClickUpIntegration extends BaseIntegrationService {
 
   async disconnect(): Promise<void> {
     this.accessToken = undefined
-    ;(this as any).refreshToken = undefined
+    ;(this as any).refreshTokenValue = undefined
     this.expiresAt = undefined
     this.listId = undefined
   }

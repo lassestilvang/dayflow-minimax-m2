@@ -277,7 +277,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async bulkUpdate(data: BulkTaskUpdateValidation): Promise<Task[]> {
     try {
-      const results = await db.transaction(async (tx) => {
+      const results = await db.transaction(async (tx: any) => {
         const updatedTasks = []
         for (const id of data.ids) {
           const [updated] = await tx
@@ -332,8 +332,8 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
       const task = result[0].task
       const tags_data = result
-        .filter(r => r.tags?.id)
-        .map(r => r.tags!) as { id: string; name: string; color: string }[]
+        .filter((r: any) => r.tags?.id)
+        .map((r: any) => r.tags!) as { id: string; name: string; color: string }[]
 
       return { ...task, tags: tags_data }
     } catch (error: any) {
@@ -435,7 +435,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async bulkUpdate(data: BulkEventUpdateValidation): Promise<CalendarEvent[]> {
     try {
-      const results = await db.transaction(async (tx) => {
+      const results = await db.transaction(async (tx: any) => {
         const updatedEvents = []
         for (const id of data.ids) {
           const [updated] = await tx
@@ -490,8 +490,8 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
       const event = result[0].event
       const tags_data = result
-        .filter(r => r.tags?.id)
-        .map(r => r.tags!) as { id: string; name: string; color: string }[]
+        .filter((r: any) => r.tags?.id)
+        .map((r: any) => r.tags!) as { id: string; name: string; color: string }[]
 
       return { ...event, tags: tags_data }
     } catch (error: any) {

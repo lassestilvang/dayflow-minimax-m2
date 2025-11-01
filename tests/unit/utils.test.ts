@@ -42,6 +42,13 @@ import {
 } from '@/lib/date-utils'
 import type { EventOrTask, CalendarWeek } from '@/types/calendar'
 
+// Helper function to complete EventOrTask test objects
+const completeEventOrTask = (obj: any) => ({
+  ...obj,
+  progress: obj.progress ?? 0,
+  recurrence: obj.recurrence ?? { type: 'none' as const },
+  reminder: obj.reminder ?? { enabled: false, minutesBefore: 0 },
+})
 // Mock date-fns functions
 vi.mock('date-fns', () => ({
   format: vi.fn(),

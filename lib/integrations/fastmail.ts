@@ -3,7 +3,7 @@
  * Implements calendar integration with Fastmail using CalDAV protocol
  */
 
-import { BaseIntegrationService, IntegrationConfig, ExternalEvent, EventData, SyncResult, IntegrationError, RateLimitError, ValidationError } from './base'
+import { BaseIntegrationService, IntegrationConfig, ExternalEvent, EventData, TaskData, SyncResult, IntegrationError, RateLimitError, ValidationError } from './base'
 import { RateLimiter, DataTransformer, ConflictDetector, RetryHandler, WebhookUtils, OAuthUtils } from './utils'
 import { CalendarEvent } from '../db/schema'
 
@@ -90,7 +90,7 @@ export class FastmailCalendarIntegration extends BaseIntegrationService {
   private calendarUrl?: string
   private rateLimiter: RateLimiter
 
-  constructor(config: IntegrationConfig = {}) {
+  constructor(config: Partial<IntegrationConfig> = {}) {
     super(config)
     this.rateLimiter = new RateLimiter(200, 2000) // Fastmail allows more requests
   }
@@ -193,20 +193,68 @@ export class FastmailCalendarIntegration extends BaseIntegrationService {
     return this.syncEvents()
   }
 
-  async createTask(task: EventData): Promise<ExternalEvent> {
-    return this.createEvent(task)
+  async createTask(task: TaskData): Promise<import('./base').ExternalTask> {
+    // Convert TaskData to EventData for calendar integration
+    const eventData: EventData = {
+      title: task.title,
+      description: task.description,
+      startTime: task.startTime || task.dueDate || new Date(),
+      endTime: task.endTime || task.dueDate || new Date(),
+      isAllDay: task.startTime === undefined
+    }
+    const event = await this.createEvent(eventData)
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      status: 'pending',
+      priority: task.priority,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      data: event.data
+    }
   }
 
-  async updateTask(externalId: string, task: EventData): Promise<ExternalEvent> {
-    return this.updateEvent(externalId, task)
+  async updateTask(externalId: string, task: TaskData): Promise<import('./base').ExternalTask> {
+    // Convert TaskData to EventData for calendar integration
+    const eventData: EventData = {
+      title: task.title,
+      description: task.description,
+      startTime: task.startTime || task.dueDate || new Date(),
+      endTime: task.endTime || task.dueDate || new Date(),
+      isAllDay: task.startTime === undefined
+    }
+    const event = await this.updateEvent(externalId, eventData)
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      data: event.data
+    }
   }
 
   async deleteTask(externalId: string): Promise<void> {
     await this.deleteEvent(externalId)
   }
 
-  async getTask(externalId: string): Promise<ExternalEvent | null> {
-    return this.getEvent(externalId)
+  async getTask(externalId: string): Promise<import('./base').ExternalTask | null> {
+    const event = await this.getEvent(externalId)
+    if (!event) return null
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      status: 'pending',
+      priority: 'medium',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      data: event.data
+    }
   }
 
   async createEvent(event: EventData): Promise<ExternalEvent> {
@@ -440,8 +488,8 @@ export class FastmailCalendarIntegration extends BaseIntegrationService {
     if (recurrence.endDate) {
       const until = this.formatICalDate(recurrence.endDate)
       parts.push(`UNTIL=${until}`)
-    } else if (recurrence.count) {
-      parts.push(`COUNT=${recurrence.count}`)
+    } else if ((recurrence as any).count) {
+      parts.push(`COUNT=${(recurrence as any).count}`)
     }
 
     return parts.join(';')
@@ -508,7 +556,7 @@ export class FastmailCalendarIntegration extends BaseIntegrationService {
     const endTime = event.endDate
     const isAllDay = event.allDay || false
     const location = event.location
-    const attendees = event.attendees?.map(attendee => ({
+    const attendees = event.attendees?.map((attendee: any) => ({
       email: attendee.email || attendee.cua.replace('mailto:', ''),
       name: attendee.name,
       status: this.mapCalDAVResponseStatus(attendee.status)

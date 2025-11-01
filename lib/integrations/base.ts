@@ -295,11 +295,11 @@ export abstract class BaseIntegrationService implements BaseIntegration {
     }
   }
 
-  get refreshToken(): string | undefined {
+  get refreshTokenValue(): string | undefined {
     return this._refreshToken
   }
 
-  set refreshToken(token: string | undefined) {
+  set refreshTokenValue(token: string | undefined) {
     this._refreshToken = token
   }
 

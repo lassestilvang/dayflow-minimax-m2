@@ -83,7 +83,7 @@ export class LinearIntegration extends BaseIntegrationService {
   private teamId?: string
   private rateLimiter: RateLimiter
 
-  constructor(config: IntegrationConfig = {}) {
+  constructor(config: Partial<IntegrationConfig> = {}) {
     super(config)
     this.rateLimiter = new RateLimiter(100, 1000) // 100 per minute, 1000 per hour
   }
@@ -101,7 +101,7 @@ export class LinearIntegration extends BaseIntegrationService {
 
   async authenticate(accessToken: string, refreshToken?: string, expiresAt?: Date): Promise<void> {
     this.accessToken = accessToken
-    this.refreshToken = refreshToken
+    this.refreshTokenValue = refreshToken
     this.expiresAt = expiresAt
     await this.initialize()
   }
@@ -385,11 +385,11 @@ export class LinearIntegration extends BaseIntegrationService {
     }
   }
 
-  async createEvent(event: TaskData): Promise<ExternalTask> {
+  async createEvent(event: import('./base').EventData): Promise<import('./base').ExternalEvent> {
     throw new IntegrationError('Linear does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
-  async updateEvent(externalId: string, event: TaskData): Promise<ExternalTask> {
+  async updateEvent(externalId: string, event: import('./base').EventData): Promise<import('./base').ExternalEvent> {
     throw new IntegrationError('Linear does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
@@ -397,7 +397,7 @@ export class LinearIntegration extends BaseIntegrationService {
     throw new IntegrationError('Linear does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
-  async getEvent(externalId: string): Promise<ExternalTask | null> {
+  async getEvent(externalId: string): Promise<import('./base').ExternalEvent | null> {
     throw new IntegrationError('Linear does not support calendar events', 'UNSUPPORTED_OPERATION')
   }
 
@@ -470,7 +470,7 @@ export class LinearIntegration extends BaseIntegrationService {
 
   async disconnect(): Promise<void> {
     this.accessToken = undefined
-    this.refreshToken = undefined
+    this.refreshTokenValue = undefined
     this.expiresAt = undefined
     this.teamId = undefined
   }
@@ -598,7 +598,6 @@ export class LinearIntegration extends BaseIntegrationService {
         identifier: issue.identifier,
         state: issue.state,
         assignee: issue.assignee,
-        ...issue,
         dayflowId: issue.id
       }
     }

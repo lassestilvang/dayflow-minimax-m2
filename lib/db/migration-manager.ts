@@ -30,7 +30,12 @@ export class MigrationManager {
   constructor(connectionString: string) {
     this.connectionString = connectionString
     const sqlClient = neon(connectionString)
-    this.db = drizzle(sqlClient) as any
+    // @ts-ignore - Type compatibility issue between drizzle-orm and @neondatabase/serverless versions
+    this.db = drizzle(sqlClient, { 
+      schema: {}, 
+      mode: 'default',
+      logger: process.env.NODE_ENV === 'development'
+    })
   }
 
   // Load migrations from directory
@@ -89,8 +94,8 @@ export class MigrationManager {
       id: migration.id,
       name: migration.name,
       applied: appliedIds.has(migration.id),
-      appliedAt: appliedMigrations.find(m => m.id === migration.id)?.applied_at,
-      error: appliedMigrations.find(m => m.id === migration.id)?.error,
+      appliedAt: appliedMigrations.find((m: any) => m.id === migration.id)?.applied_at,
+      error: appliedMigrations.find((m: any) => m.id === migration.id)?.error,
     }))
   }
 
@@ -250,8 +255,8 @@ export const down = async (db: any) => {
         .where(sql`datname = current_database()`)
 
       return {
-        tables: tables.map(t => t.tableName),
-        indexes: indexes.map(i => `${i.tableName}.${i.indexName}`),
+        tables: tables.map((t: any) => t.tableName),
+        indexes: indexes.map((i: any) => `${i.tableName}.${i.indexName}`),
         size: sizeResult[0]?.size || '0 bytes',
       }
     } catch (error: any) {

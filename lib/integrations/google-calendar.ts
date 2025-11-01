@@ -98,11 +98,12 @@ export class GoogleCalendarIntegration extends BaseIntegrationService {
   readonly authUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
   readonly tokenUrl = 'https://oauth2.googleapis.com/token'
   readonly apiBaseUrl = 'https://www.googleapis.com/calendar/v3'
+  readonly clientId?: string
 
   private calendarId?: string
   private rateLimiter: RateLimiter
 
-  constructor(config: IntegrationConfig = {}) {
+  constructor(config: Partial<IntegrationConfig> = {}) {
     super(config)
     this.rateLimiter = new RateLimiter(1000, 10000) // High quota for Google APIs
   }
@@ -117,7 +118,7 @@ export class GoogleCalendarIntegration extends BaseIntegrationService {
 
   async authenticate(accessToken: string, refreshToken?: string, expiresAt?: Date): Promise<void> {
     this.accessToken = accessToken
-    this.refreshToken = refreshToken
+    this.refreshTokenValue = refreshToken
     this.expiresAt = expiresAt
     await this.initialize()
   }
@@ -145,7 +146,7 @@ export class GoogleCalendarIntegration extends BaseIntegrationService {
         },
         body: new URLSearchParams({
           grant_type: 'refresh_token',
-          refresh_token: this.refreshToken!,
+          refresh_token: this.refreshTokenValue!,
           client_id: this.clientId || ''
         })
       })
@@ -227,21 +228,68 @@ export class GoogleCalendarIntegration extends BaseIntegrationService {
     return this.syncEvents()
   }
 
-  async createTask(task: EventData): Promise<ExternalEvent> {
-    // Create calendar event for task
-    return this.createEvent(task)
+  async createTask(task: import('./base').TaskData): Promise<import('./base').ExternalTask> {
+    // Convert TaskData to EventData for calendar integration
+    const eventData: EventData = {
+      title: task.title,
+      description: task.description,
+      startTime: task.startTime || task.dueDate || new Date(),
+      endTime: task.endTime || task.dueDate || new Date(),
+      isAllDay: task.startTime === undefined
+    }
+    const event = await this.createEvent(eventData)
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      status: 'pending',
+      priority: task.priority,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      data: event.data
+    }
   }
 
-  async updateTask(externalId: string, task: EventData): Promise<ExternalEvent> {
-    return this.updateEvent(externalId, task)
+  async updateTask(externalId: string, task: import('./base').TaskData): Promise<import('./base').ExternalTask> {
+    // Convert TaskData to EventData for calendar integration
+    const eventData: EventData = {
+      title: task.title,
+      description: task.description,
+      startTime: task.startTime || task.dueDate || new Date(),
+      endTime: task.endTime || task.dueDate || new Date(),
+      isAllDay: task.startTime === undefined
+    }
+    const event = await this.updateEvent(externalId, eventData)
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      data: event.data
+    }
   }
 
   async deleteTask(externalId: string): Promise<void> {
     await this.deleteEvent(externalId)
   }
 
-  async getTask(externalId: string): Promise<ExternalEvent | null> {
-    return this.getEvent(externalId)
+  async getTask(externalId: string): Promise<import('./base').ExternalTask | null> {
+    const event = await this.getEvent(externalId)
+    if (!event) return null
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      status: 'pending',
+      priority: 'medium',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      data: event.data
+    }
   }
 
   async createEvent(event: EventData): Promise<ExternalEvent> {
@@ -296,12 +344,6 @@ export class GoogleCalendarIntegration extends BaseIntegrationService {
       const until = event.recurrence.endDate.toISOString().split('T')[0].replace(/-/g, '')
       googleEvent.recurrence = googleEvent.recurrence || []
       googleEvent.recurrence.push(`UNTIL=${until}`)
-    }
-
-    if (event.data?.extendedProperties) {
-      googleEvent.extendedProperties = {
-        private: event.data.extendedProperties
-      }
     }
 
     const response = await this.makeRequest('POST', `/calendars/${this.calendarId}/events`, googleEvent)
@@ -424,7 +466,7 @@ export class GoogleCalendarIntegration extends BaseIntegrationService {
 
   async disconnect(): Promise<void> {
     this.accessToken = undefined
-    this.refreshToken = undefined
+    this.refreshTokenValue = undefined
     this.expiresAt = undefined
     this.calendarId = undefined
   }
