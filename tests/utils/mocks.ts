@@ -26,7 +26,7 @@ export const mockUtils = {
   mockLocalStorage() {
     const store: Record<string, any> = {}
     
-    return {
+    const mockStorage = {
       getItem: vi.fn((key: string) => store[key] || null),
       setItem: vi.fn((key: string, value: string) => {
         store[key] = value
@@ -38,15 +38,21 @@ export const mockUtils = {
         Object.keys(store).forEach(key => delete store[key])
       }),
       key: vi.fn((index: number) => Object.keys(store)[index] || null),
-      length: vi.fn(() => Object.keys(store).length),
     }
+    
+    Object.defineProperty(mockStorage, 'length', {
+      get: () => Object.keys(store).length,
+      configurable: true,
+    })
+    
+    return mockStorage
   },
 
   // Mock sessionStorage
   mockSessionStorage() {
     const store: Record<string, any> = {}
     
-    return {
+    const mockStorage = {
       getItem: vi.fn((key: string) => store[key] || null),
       setItem: vi.fn((key: string, value: string) => {
         store[key] = value
@@ -58,60 +64,81 @@ export const mockUtils = {
         Object.keys(store).forEach(key => delete store[key])
       }),
       key: vi.fn((index: number) => Object.keys(store)[index] || null),
-      length: vi.fn(() => Object.keys(store).length),
     }
+    
+    Object.defineProperty(mockStorage, 'length', {
+      get: () => Object.keys(store).length,
+      configurable: true,
+    })
+    
+    return mockStorage
   },
 
   // Mock WebSocket
   mockWebSocket() {
     const listeners: Record<string, Function[]> = {}
     
-    return {
-      send: vi.fn(),
-      close: vi.fn(),
-      addEventListener: vi.fn((event: string, handler: Function) => {
+    return Object.assign(function(this: any) {
+      this.send = vi.fn()
+      this.close = vi.fn()
+      this.addEventListener = vi.fn((event: string, handler: Function) => {
         if (!listeners[event]) {
           listeners[event] = []
         }
         listeners[event].push(handler)
-      }),
-      removeEventListener: vi.fn((event: string, handler: Function) => {
+      })
+      this.removeEventListener = vi.fn((event: string, handler: Function) => {
         if (listeners[event]) {
           const index = listeners[event].indexOf(handler)
           if (index > -1) {
             listeners[event].splice(index, 1)
           }
         }
-      }),
-      dispatchEvent: vi.fn((event: any) => {
+      })
+      this.dispatchEvent = vi.fn((event: any) => {
         const eventType = event.type
         if (listeners[eventType]) {
           listeners[eventType].forEach(handler => handler(event))
         }
         return true
-      }),
-      readyState: 1, // OPEN
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-    }
+      })
+      this.readyState = 1 // OPEN
+      this.connect = vi.fn()
+      this.disconnect = vi.fn()
+    }, {
+      CONNECTING: 0,
+      OPEN: 1,
+      CLOSING: 2,
+      CLOSED: 3,
+      prototype: {}
+    })
   },
 
   // Mock IntersectionObserver
   mockIntersectionObserver() {
-    return {
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }
+    return Object.assign(function(this: any, callback: IntersectionObserverCallback) {
+      this.observe = vi.fn()
+      this.unobserve = vi.fn()
+      this.disconnect = vi.fn()
+      this.takeRecords = vi.fn()
+      this.root = null
+      this.rootMargin = ''
+      this.thresholds = []
+    }, {
+      prototype: {}
+    })
   },
 
   // Mock ResizeObserver
   mockResizeObserver() {
-    return {
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }
+    return Object.assign(function(this: any, callback: ResizeObserverCallback) {
+      this.observe = vi.fn()
+      this.unobserve = vi.fn()
+      this.disconnect = vi.fn()
+      this.takeRecords = vi.fn()
+    }, {
+      prototype: {}
+    })
   },
 
   // Mock date/time functions
@@ -120,7 +147,7 @@ export const mockUtils = {
     vi.setSystemTime(mockDate)
     
     return {
-      reset: () => vi.setSystemTime(),
+      reset: () => vi.setSystemTime(0),
       advance: (ms: number) => vi.setSystemTime(Date.now() + ms),
       mockDate,
     }
@@ -128,8 +155,6 @@ export const mockUtils = {
 
   // Mock crypto functions
   mockCrypto() {
-    const crypto = global.crypto || {}
-    
     return {
       randomUUID: vi.fn(() => 'mock-uuid-123'),
       getRandomValues: vi.fn((array: Uint8Array) => {
@@ -138,7 +163,6 @@ export const mockUtils = {
         }
         return array
       }),
-      ...crypto,
     }
   },
 
@@ -151,7 +175,7 @@ export const mockUtils = {
     
     const setTimeoutMock = vi.fn((callback: Function, delay?: number) => {
       const id = Math.random()
-      timers.timeouts.set(id, setTimeout(callback, delay))
+      timers.timeouts.set(id, setTimeout(callback, delay) as NodeJS.Timeout)
       return id
     })
     
@@ -165,7 +189,7 @@ export const mockUtils = {
     
     const setIntervalMock = vi.fn((callback: Function, delay?: number) => {
       const id = Math.random()
-      timers.intervals.set(id, setInterval(callback, delay))
+      timers.intervals.set(id, setInterval(callback, delay) as NodeJS.Timeout)
       return id
     })
     
@@ -320,27 +344,43 @@ export const mockUtils = {
     global.IntersectionObserver = vi.fn(() => this.mockIntersectionObserver())
     global.ResizeObserver = vi.fn(() => this.mockResizeObserver())
     global.crypto = this.mockCrypto()
-    global.setTimeout = vi.fn()
+    global.setTimeout = vi.fn((callback: TimerHandler) => callback) as any
     global.clearTimeout = vi.fn()
-    global.setInterval = vi.fn()
+    global.setInterval = vi.fn((callback: TimerHandler) => callback) as any
     global.clearInterval = vi.fn()
     
     if (global.navigator) {
-      global.navigator.clipboard = this.mockClipboard()
-      global.navigator.geolocation = this.mockGeolocation()
-      global.navigator.mediaDevices = this.mockMediaDevices()
+      Object.defineProperty(global.navigator, 'clipboard', {
+        value: this.mockClipboard(),
+        writable: true,
+        configurable: true,
+      })
+      Object.defineProperty(global.navigator, 'geolocation', {
+        value: this.mockGeolocation(),
+        writable: true,
+        configurable: true,
+      })
+      Object.defineProperty(global.navigator, 'mediaDevices', {
+        value: this.mockMediaDevices(),
+        writable: true,
+        configurable: true,
+      })
     }
     
     if ('Notification' in global) {
-      global.Notification = this.mockNotification()
+      global.Notification = Object.assign(this.mockNotification(), { prototype: {} })
     }
     
     if ('BroadcastChannel' in global) {
-      global.BroadcastChannel = this.mockBroadcastChannel()
+      global.BroadcastChannel = Object.assign(this.mockBroadcastChannel(), { prototype: {} })
     }
     
     if ('serviceWorker' in global.navigator) {
-      global.navigator.serviceWorker = this.mockServiceWorker()
+      Object.defineProperty(global.navigator, 'serviceWorker', {
+        value: this.mockServiceWorker(),
+        writable: true,
+        configurable: true,
+      })
     }
   },
 }

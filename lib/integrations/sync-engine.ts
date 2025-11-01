@@ -570,7 +570,7 @@ export class SyncEngine {
     const integration = factory()
     await integration.authenticate(
       userIntegration.accessToken!,
-      userIntegration.refreshToken,
+      userIntegration.refreshToken || undefined,
       userIntegration.tokenExpiresAt || undefined
     )
 
@@ -582,13 +582,13 @@ export class SyncEngine {
     userIntegration: UserIntegration
   ): Promise<Task | null> {
     // Search by external ID first
-    const existing = await db.query.externalItems.findFirst({
+    const existing = await db.query.externalItems?.findFirst?.({
       where: and(
         eq(externalItems.externalId, externalTask.id),
         eq(externalItems.externalService, userIntegration.serviceName),
         eq(externalItems.userIntegrationId, userIntegration.id)
       )
-    })
+    }) || null
 
     if (existing?.itemId) {
       return taskRepository.findById(existing.itemId)
@@ -607,13 +607,13 @@ export class SyncEngine {
     userIntegration: UserIntegration
   ): Promise<CalendarEvent | null> {
     // Search by external ID first
-    const existing = await db.query.externalItems.findFirst({
+    const existing = await db.query.externalItems?.findFirst?.({
       where: and(
         eq(externalItems.externalId, externalEvent.id),
         eq(externalItems.externalService, userIntegration.serviceName),
         eq(externalItems.userIntegrationId, userIntegration.id)
       )
-    })
+    }) || null
 
     if (existing?.itemId) {
       return calendarEventRepository.findById(existing.itemId)
@@ -678,8 +678,8 @@ export class SyncEngine {
 
   private isUpdateNeeded(dayflowItem: Task | CalendarEvent, externalItem: ExternalTask | ExternalEvent): boolean {
     // Check if the external item is newer
-    const dayflowUpdated = dayflowItem.updatedAt.getTime()
-    const externalUpdated = externalItem.updatedAt?.getTime() || 0
+    const dayflowUpdated = dayflowItem.updatedAt?.getTime() || 0
+    const externalUpdated = 'updatedAt' in externalItem && externalItem.updatedAt ? externalItem.updatedAt.getTime() : 0
     
     return externalUpdated > dayflowUpdated
   }
@@ -739,7 +739,9 @@ export class SyncEngine {
     for (const conflict of result.conflicts) {
       switch (strategy) {
         case 'latest':
-          const latestItem = (conflict.dayflowItem.updatedAt.getTime() >= (conflict.externalItem.updatedAt?.getTime() || 0))
+          const dayflowTime = conflict.dayflowItem.updatedAt?.getTime() || 0
+          const externalTime = 'updatedAt' in conflict.externalItem && conflict.externalItem.updatedAt ? conflict.externalItem.updatedAt.getTime() : 0
+          const latestItem = (dayflowTime >= externalTime)
             ? conflict.dayflowItem
             : conflict.externalItem
           await this.applyResolution(job, conflict, latestItem === conflict.dayflowItem ? 'keep_dayflow' : 'keep_external')

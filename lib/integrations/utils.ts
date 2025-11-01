@@ -16,6 +16,14 @@ class AuthenticationError extends Error {
   }
 }
 
+// Export classes and utilities
+export { AuthenticationError }
+
+// Export the classes from base
+export type { IntegrationError, RateLimitError, ValidationError, ExternalTask, ExternalEvent }
+
+// OAuthUtils is already exported at the bottom
+
 // Rate Limiting
 export class RateLimiter {
   private requests: number[] = []
@@ -79,12 +87,12 @@ export class DataTransformer {
       priority: DataTransformer.mapDayFlowPriority(task.priority, serviceName),
       dueDate: task.dueDate || undefined,
       completedAt: task.completedAt || undefined,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
-      tags: task.data?.tags,
-      url: task.data?.url,
+      createdAt: task.createdAt || new Date(),
+      updatedAt: task.updatedAt || new Date(),
+      tags: (task as any).data?.tags,
+      url: (task as any).data?.url,
       data: {
-        ...task.data,
+        ...(task as any).data,
         dayflowId: task.id,
         userId: task.userId,
       }
@@ -100,9 +108,14 @@ export class DataTransformer {
       endTime: externalEvent.endTime,
       isAllDay: externalEvent.isAllDay,
       location: externalEvent.location,
-      attendees: externalEvent.attendees,
-      recurrence: externalEvent.recurrence,
-      userId,
+      attendees: externalEvent.attendees?.map(attendee => ({
+        ...attendee,
+        status: attendee.status || 'pending'
+      })),
+      recurrence: externalEvent.recurrence ? {
+        ...externalEvent.recurrence,
+        type: externalEvent.recurrence.type as any
+      } : undefined,
     }
 
     return event

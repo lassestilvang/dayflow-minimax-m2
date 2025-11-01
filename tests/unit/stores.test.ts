@@ -21,6 +21,7 @@ import {
   DEFAULT_VIEW_SETTINGS,
   createDefaultEvents
 } from '@/lib/date-utils'
+import { completeEventOrTask, completeEvent, completeTask } from '@/tests/utils/complete-event-or-task-helper'
 
 // Mock the dependencies
 vi.mock('@/lib/data-access', () => ({
@@ -192,16 +193,14 @@ describe('Enhanced Calendar Store', () => {
 
       // Set initial event
       useEnhancedCalendarStore.setState({
-        events: [{
+        events: [completeEvent({
           id: 'event-1',
           title: 'Original Event',
           startTime: new Date('2024-01-01T10:00:00Z'),
           endTime: new Date('2024-01-01T11:00:00Z'),
           isAllDay: false,
           userId: 'user-1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }],
+        })],
       })
 
       const updates = { title: 'Updated Event' }
@@ -220,16 +219,14 @@ describe('Enhanced Calendar Store', () => {
 
       // Set initial event
       useEnhancedCalendarStore.setState({
-        events: [{
+        events: [completeEvent({
           id: 'event-1',
           title: 'Test Event',
           startTime: new Date('2024-01-01T10:00:00Z'),
           endTime: new Date('2024-01-01T11:00:00Z'),
           isAllDay: false,
           userId: 'user-1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }],
+        })],
       })
 
       const result = await act(async () => {
@@ -313,16 +310,14 @@ describe('Enhanced Calendar Store', () => {
 
       // Set initial task
       useEnhancedCalendarStore.setState({
-        tasks: [{
+        tasks: [completeTask({
           id: 'task-1',
           title: 'Original Task',
           description: 'Original Description',
           status: 'pending' as const,
           priority: 'medium' as const,
           userId: 'user-1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }],
+        })],
       })
 
       const updates = {
@@ -346,15 +341,13 @@ describe('Enhanced Calendar Store', () => {
 
       // Set initial task
       useEnhancedCalendarStore.setState({
-        tasks: [{
+        tasks: [completeTask({
           id: 'task-1',
           title: 'Test Task',
           status: 'pending' as const,
           priority: 'medium' as const,
           userId: 'user-1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }],
+        })],
       })
 
       const result = await act(async () => {
@@ -399,16 +392,14 @@ describe('Enhanced Calendar Store', () => {
 
       // Add the event to state
       useEnhancedCalendarStore.setState((state) => ({
-        events: [...state.events, {
+        events: [...state.events, completeEvent({
           id,
           title: 'Optimistic Event',
           startTime: new Date(),
           endTime: new Date(),
           isAllDay: false,
           userId: 'user-1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }],
+        })],
       }))
 
       // Rollback the update
@@ -468,14 +459,14 @@ describe('Enhanced Calendar Store', () => {
       
       // Set up an event that exists in the store
       useEnhancedCalendarStore.setState({
-        events: [{
+        events: [completeEvent({
           id: 'event-1',
           title: 'Test Event',
           startTime: new Date('2024-01-01T10:00:00Z'),
           endTime: new Date('2024-01-01T11:00:00Z'),
           isAllDay: false,
           userId: 'user-1',
-        }],
+        })],
         tasks: []
       })
       
@@ -635,7 +626,7 @@ describe('Enhanced Calendar Store', () => {
     beforeEach(() => {
       useEnhancedCalendarStore.setState({
         events: [
-          {
+          completeEvent({
             id: 'event-1',
             title: 'Team Meeting',
             description: 'Weekly team standup',
@@ -643,17 +634,17 @@ describe('Enhanced Calendar Store', () => {
             endTime: new Date('2024-01-01T11:00:00Z'),
             isAllDay: false,
             userId: 'user-1',
-          },
+          }),
         ],
         tasks: [
-          {
+          completeTask({
             id: 'task-1',
             title: 'Complete Project',
             description: 'Finish main features',
             status: 'pending' as const,
             priority: 'high' as const,
             userId: 'user-1',
-          },
+          }),
         ],
       })
     })
@@ -714,20 +705,20 @@ describe('Legacy Stores', () => {
       // Set some tasks in the store
       useEnhancedCalendarStore.setState({
         tasks: [
-          {
+          completeTask({
             id: 'task-1',
             title: 'Task 1',
             status: 'pending' as const,
             priority: 'medium' as const,
             userId: 'user-1',
-          },
-          {
+          }),
+          completeTask({
             id: 'task-2',
             title: 'Task 2',
             status: 'completed' as const,
             priority: 'low' as const,
             userId: 'user-1',
-          },
+          }),
         ],
       })
 

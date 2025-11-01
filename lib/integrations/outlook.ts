@@ -607,8 +607,8 @@ export class OutlookCalendarIntegration extends BaseIntegrationService {
     } as any
   }
 
-  private mapDayFlowTypeToOutlook(type: EventData['recurrence']['type']): any {
-    const typeMap: Record<EventData['recurrence']['type'], any> = {
+  private mapDayFlowTypeToOutlook(type: any): any {
+    const typeMap: Record<string, any> = {
       'none': 'daily', // Should not happen
       'daily': 'daily',
       'weekly': 'weekly',

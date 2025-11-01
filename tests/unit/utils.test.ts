@@ -359,7 +359,7 @@ describe('Date Utilities', () => {
     })
 
     it('should format all-day event time', () => {
-      const allDayEvent: EventOrTask = {
+      const allDayEvent: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'All Day Event',
         isAllDay: true,
@@ -371,7 +371,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       const formatted = formatEventTime(allDayEvent)
       
@@ -387,7 +387,7 @@ describe('Date Utilities', () => {
         return d.toISOString()
       })
       
-      const timedEvent: EventOrTask = {
+      const timedEvent: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'Timed Event',
         isAllDay: false,
@@ -399,7 +399,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       const formatted = formatEventTime(timedEvent)
       
@@ -407,7 +407,7 @@ describe('Date Utilities', () => {
     })
 
     it('should handle events without time data', () => {
-      const noTimeEvent: EventOrTask = {
+      const noTimeEvent: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'No Time Event',
         isAllDay: false,
@@ -417,7 +417,7 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       const formatted = formatEventTime(noTimeEvent)
       
@@ -502,7 +502,7 @@ describe('Date Utilities', () => {
   describe('Event Sorting and Filtering', () => {
     it('should sort events by time', () => {
       const events: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-01T15:00:00Z'),
@@ -512,8 +512,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-01T09:00:00Z'),
@@ -523,8 +523,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '3',
           title: 'Event 3',
           startTime: new Date('2024-01-01T12:00:00Z'),
@@ -534,7 +534,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const sorted = sortEventsByTime(events)
@@ -546,7 +546,7 @@ describe('Date Utilities', () => {
 
     it('should place events without time at the beginning', () => {
       const events: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-01T15:00:00Z'),
@@ -556,8 +556,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           status: 'pending' as const,
@@ -566,8 +566,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '3',
           title: 'Event 3',
           startTime: new Date('2024-01-01T09:00:00Z'),
@@ -577,7 +577,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const sorted = sortEventsByTime(events)
@@ -590,7 +590,7 @@ describe('Date Utilities', () => {
     it('should get events for specific day', () => {
       const targetDate = new Date('2024-01-01')
       const events: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-01T10:00:00Z'),
@@ -600,8 +600,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-02T10:00:00Z'),
@@ -611,8 +611,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '3',
           title: 'Event 3',
           startTime: new Date('2024-01-01T15:00:00Z'),
@@ -622,7 +622,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       vi.mocked(isSameDay)
@@ -645,7 +645,7 @@ describe('Date Utilities', () => {
       }
       
       const events: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-03T10:00:00Z'),
@@ -655,8 +655,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-10T10:00:00Z'), // Outside week
@@ -666,8 +666,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '3',
           title: 'Event 3',
           startTime: new Date('2024-01-06T15:00:00Z'),
@@ -677,8 +677,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '4',
           title: 'Event 4',
           status: 'pending' as const,
@@ -687,7 +687,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const weekEvents = getEventsForWeek(week, events)
@@ -703,7 +703,7 @@ describe('Date Utilities', () => {
   describe('Collision Detection', () => {
     it('should detect event collisions', () => {
       const events: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-01T10:00:00Z'),
@@ -714,8 +714,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-01T10:30:00Z'),
@@ -726,8 +726,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '3',
           title: 'Event 3',
           startTime: new Date('2024-01-01T12:00:00Z'),
@@ -738,7 +738,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const conflicts = detectEventCollisions(events)
@@ -750,7 +750,7 @@ describe('Date Utilities', () => {
 
     it('should not detect non-colliding events', () => {
       const events: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-01T10:00:00Z'),
@@ -761,8 +761,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-01T11:00:00Z'),
@@ -773,8 +773,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '3',
           title: 'Event 3',
           startTime: new Date('2024-01-01T12:30:00Z'),
@@ -785,7 +785,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const conflicts = detectEventCollisions(events)
@@ -795,7 +795,7 @@ describe('Date Utilities', () => {
 
     it('should handle events without proper time data', () => {
       const events: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           endTime: new Date('2024-01-01T11:00:00Z'),
@@ -805,8 +805,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-01T10:00:00Z'),
@@ -816,8 +816,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '3',
           title: 'Event 3',
           startTime: new Date('2024-01-01T10:30:00Z'),
@@ -828,7 +828,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const conflicts = detectEventCollisions(events)
@@ -839,7 +839,7 @@ describe('Date Utilities', () => {
     })
 
     it('should check for event collision with existing events', () => {
-      const newEvent: EventOrTask = {
+      const newEvent: EventOrTask = completeEventOrTask({
         id: 'new',
         title: 'New Event',
         startTime: new Date('2024-01-01T10:30:00Z'),
@@ -850,10 +850,10 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       const existingEvents: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-01T10:00:00Z'),
@@ -864,8 +864,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-01T12:00:00Z'),
@@ -876,7 +876,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const hasCollision = checkEventCollision(newEvent, existingEvents)
@@ -885,7 +885,7 @@ describe('Date Utilities', () => {
     })
 
     it('should not detect collision when excluded event ID matches', () => {
-      const newEvent: EventOrTask = {
+      const newEvent: EventOrTask = completeEventOrTask({
         id: '1',
         title: 'New Event',
         startTime: new Date('2024-01-01T10:30:00Z'),
@@ -896,10 +896,10 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       const existingEvents: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           startTime: new Date('2024-01-01T10:00:00Z'),
@@ -910,8 +910,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-01T12:00:00Z'),
@@ -922,7 +922,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const hasCollision = checkEventCollision(newEvent, existingEvents, '1')
@@ -931,7 +931,7 @@ describe('Date Utilities', () => {
     })
 
     it('should handle events without time data in collision check', () => {
-      const newEvent: EventOrTask = {
+      const newEvent: EventOrTask = completeEventOrTask({
         id: 'new',
         title: 'New Event',
         startTime: new Date('2024-01-01T10:30:00Z'),
@@ -942,10 +942,10 @@ describe('Date Utilities', () => {
         userId: 'user-1',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      })
       
       const existingEvents: EventOrTask[] = [
-        {
+        completeEventOrTask({
           id: '1',
           title: 'Event 1',
           endTime: new Date('2024-01-01T11:00:00Z'),
@@ -955,8 +955,8 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
-        {
+        }),
+        completeEventOrTask({
           id: '2',
           title: 'Event 2',
           startTime: new Date('2024-01-01T10:00:00Z'),
@@ -966,7 +966,7 @@ describe('Date Utilities', () => {
           userId: 'user-1',
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }),
       ]
       
       const hasCollision = checkEventCollision(newEvent, existingEvents)

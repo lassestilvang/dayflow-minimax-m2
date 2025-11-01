@@ -151,7 +151,7 @@ export class TodoistIntegration extends BaseIntegrationService {
         body: new URLSearchParams({
           grant_type: 'refresh_token',
           refresh_token: this.refreshTokenValue,
-          client_id: this.clientId || ''
+          client_id: process.env.TODOIST_CLIENT_ID || ''
         })
       })
 
