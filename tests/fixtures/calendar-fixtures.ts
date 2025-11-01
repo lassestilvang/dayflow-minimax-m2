@@ -140,7 +140,7 @@ export const calendarFixtures = {
       endTime: new Date('2024-01-15T16:00:00Z'),
       severity: 'medium' as const,
     },
-  ] as CalendarConflict[],
+  ] as unknown as CalendarConflict[],
 
   // Drag and drop scenarios
   dragDropScenarios: {
@@ -421,7 +421,7 @@ export const calendarFixtures = {
       startTime: new Date(),
       endTime: new Date(),
       severity: 'high',
-    }
+    } as any
   },
 
   // Mock calendar responses

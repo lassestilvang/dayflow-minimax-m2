@@ -1,16 +1,18 @@
 // Test fixtures and mock data for consistent testing
 
 export * from './user-fixtures'
-export * from './task-fixtures'
 export * from './event-fixtures'
 export * from './integration-fixtures'
 export * from './calendar-fixtures'
 
+// Task fixtures are handled separately to avoid naming conflicts
+export { taskFixtures } from './task-fixtures'
+
 import { userFixtures } from './user-fixtures'
-import { taskFixtures } from './task-fixtures'
 import { eventFixtures } from './event-fixtures'
 import { integrationFixtures } from './integration-fixtures'
 import { calendarFixtures } from './calendar-fixtures'
+import { taskFixtures } from './task-fixtures'
 
 export const testFixtures = {
   users: userFixtures,
