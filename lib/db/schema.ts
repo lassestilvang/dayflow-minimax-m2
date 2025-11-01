@@ -201,5 +201,24 @@ export const usersRelations = relations(users, ({ many }) => ({
   tags: many(tags),
 }))
 
+// Export table types
+export type User = typeof users.$inferSelect
+export type UserInsert = typeof users.$inferInsert
+export type Task = typeof tasks.$inferSelect
+export type TaskInsert = typeof tasks.$inferInsert
+export type CalendarEvent = typeof calendarEvents.$inferSelect
+export type CalendarEventInsert = typeof calendarEvents.$inferInsert
+
+// Export tables object for drizzle
+export const Tables = {
+  users,
+  tasks,
+  calendarEvents,
+  categories,
+  tags,
+  taskTags,
+  eventTags,
+} as const
+
 // Helper function for SQL constraints
 const sql = (strings: TemplateStringsArray, ...values: any[]) => strings.join('')

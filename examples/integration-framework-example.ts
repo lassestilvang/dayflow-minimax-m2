@@ -38,7 +38,10 @@ export async function exampleNotionIntegration(userId: string, databaseId: strin
       conflictResolution: 'manual',
       syncDirection: 'two_way',
       autoSync: true,
-      syncInterval: 15
+      syncInterval: 15,
+      syncTasks: true,
+      syncEvents: false,
+      filters: {}
     })
 
     // Step 4: Authenticate with tokens
@@ -95,7 +98,10 @@ export async function exampleClickUpIntegration(userId: string, listId: string) 
       syncTasks: true,
       syncEvents: false,
       autoSync: true,
-      conflictResolution: 'latest'
+      conflictResolution: 'latest',
+      syncInterval: 15,
+      syncDirection: 'two_way',
+      filters: {}
     })
 
     // Authenticate (would use OAuth flow in real app)
@@ -166,7 +172,10 @@ export async function exampleGoogleCalendarIntegration(userId: string, calendarI
       syncEvents: true,
       syncTasks: false,
       autoSync: true,
-      conflictResolution: 'merge'
+      conflictResolution: 'merge',
+      syncInterval: 15,
+      syncDirection: 'two_way',
+      filters: {}
     })
 
     // Authenticate with Google OAuth
@@ -249,9 +258,36 @@ export async function exampleMultiServiceSync(userId: string) {
 
     // Connect to multiple services
     const services = {
-      notion: new NotionIntegration({ fieldMapping: { databaseId: 'notion-db-123' } }),
-      clickup: new ClickUpIntegration({ fieldMapping: { listId: 'clickup-list-456' } }),
-      googleCalendar: new GoogleCalendarIntegration({ fieldMapping: { calendarId: 'google-cal-789' } })
+      notion: new NotionIntegration({ 
+        fieldMapping: { databaseId: 'notion-db-123' },
+        autoSync: true,
+        syncInterval: 15,
+        syncDirection: 'two_way',
+        syncTasks: true,
+        syncEvents: true,
+        conflictResolution: 'manual',
+        filters: {}
+      }),
+      clickup: new ClickUpIntegration({ 
+        fieldMapping: { listId: 'clickup-list-456' },
+        autoSync: true,
+        syncInterval: 15,
+        syncDirection: 'two_way',
+        syncTasks: true,
+        syncEvents: true,
+        conflictResolution: 'manual',
+        filters: {}
+      }),
+      googleCalendar: new GoogleCalendarIntegration({ 
+        fieldMapping: { calendarId: 'google-cal-789' },
+        autoSync: true,
+        syncInterval: 15,
+        syncDirection: 'two_way',
+        syncTasks: true,
+        syncEvents: true,
+        conflictResolution: 'manual',
+        filters: {}
+      })
     }
 
     // Authenticate all services
@@ -281,7 +317,16 @@ export async function exampleMultiServiceSync(userId: string) {
             syncEvents: true,
             conflictResolution: 'manual',
             fieldMapping: {}
-          }
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastSyncAt: null,
+          syncError: null,
+          serviceId: name,
+          syncStatus: 'pending',
+          configuration: {},
+          webhookId: null,
+          webhookSecret: null
         }, {
           syncTasks: name !== 'google-calendar', // Skip tasks for calendar service
           syncEvents: name !== 'notion' && name !== 'clickup' // Skip events for task services
@@ -296,7 +341,7 @@ export async function exampleMultiServiceSync(userId: string) {
 
     // Monitor sync jobs
     console.log('Monitoring sync jobs...')
-    const jobStatuses = {}
+    const jobStatuses: Record<string, string> = {}
     
     for (const { service, jobId } of syncJobs) {
       // Poll job status
@@ -377,7 +422,13 @@ export async function exampleWebhookProcessing() {
     // Process each webhook event
     for (const event of webhookEvents) {
       try {
-        await webhookManager.handleWebhookEvent(event.service, event.payload, event.headers)
+        // Ensure all header values are strings
+        const stringHeaders: Record<string, string> = {}
+        Object.entries(event.headers).forEach(([key, value]) => {
+          stringHeaders[key] = value || ''
+        })
+        
+        await webhookManager.handleWebhookEvent(event.service, event.payload, stringHeaders)
         console.log(`✓ Processed ${event.service} webhook: ${event.payload.event_type || event.payload.object}`)
       } catch (error) {
         console.error(`✗ Failed to process ${event.service} webhook:`, error)
@@ -516,12 +567,3 @@ export async function runIntegrationFrameworkDemo() {
   }
 }
 
-// Export individual examples for testing
-export {
-  exampleNotionIntegration,
-  exampleClickUpIntegration,
-  exampleGoogleCalendarIntegration,
-  exampleMultiServiceSync,
-  exampleWebhookProcessing,
-  exampleAuditAndSecurity
-}

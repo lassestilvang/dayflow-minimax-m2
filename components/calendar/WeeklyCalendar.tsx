@@ -80,8 +80,10 @@ const EventFormDialog: React.FC<EventFormDialogProps> = ({
     endTime: event?.endTime ? new Date(event.endTime) : (selectedDate ? setHours(selectedDate, selectedHour ? selectedHour + 1 : 10) : new Date()),
     isAllDay: event?.isAllDay || false,
     location: event?.location || '',
-    category: event?.category || 'work' as const,
+    categoryId: event?.categoryId || 'work' as const,
     priority: event && 'priority' in event && event.priority ? event.priority : 'medium' as const,
+    recurrence: { type: 'none' as const },
+    reminder: { enabled: false as const, minutesBefore: 15 },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -103,8 +105,10 @@ const EventFormDialog: React.FC<EventFormDialogProps> = ({
       endTime: new Date(),
       isAllDay: false,
       location: '',
-      category: 'work',
+      categoryId: 'work',
       priority: 'medium',
+      recurrence: { type: 'none' as const },
+      reminder: { enabled: false as const, minutesBefore: 15 },
     })
   }
 
@@ -197,7 +201,7 @@ const EventFormDialog: React.FC<EventFormDialogProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={formData.category} onValueChange={(value: any) => setFormData({ ...formData, category: value })}>
+              <Select value={formData.categoryId} onValueChange={(value: any) => setFormData({ ...formData, categoryId: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -310,7 +314,12 @@ export const WeeklyCalendar: React.FC = () => {
   const handleEventSave = useCallback((eventData: Omit<EventOrTask, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (formEvent) {
       // Update existing event
-      updateEvent(formEvent.id, eventData)
+      const cleanEventData = {
+        ...eventData,
+        startTime: eventData.startTime || new Date(),
+        endTime: eventData.endTime || new Date(),
+      }
+      updateEvent(formEvent.id, cleanEventData)
     } else {
       // Create new event
       addEvent(eventData as any)
@@ -530,7 +539,7 @@ export const WeeklyCalendar: React.FC = () => {
 
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="capitalize">
-                {selectedEvent.category}
+                {selectedEvent.categoryId || 'work'}
               </Badge>
               {'priority' in selectedEvent && (
                 <Badge 

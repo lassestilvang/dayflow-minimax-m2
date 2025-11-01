@@ -80,8 +80,8 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
     }
 
     try {
-      const result = await db.insert(this.table).values(data).returning()
-      return result[0]
+      const result = await db.insert(this.table).values(data as any).returning()
+      return (result as any[])[0] as T
     } catch (error: any) {
       if (error.code === '23505') { // Unique constraint violation
         throw new ConflictError('Duplicate entry')
@@ -93,7 +93,7 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
   async findById(id: string): Promise<T | null> {
     try {
       const result = await db.select().from(this.table).where(eq(this.table.id, id)).limit(1)
-      return result[0] || null
+      return (result as T[])[0] || null
     } catch (error: any) {
       throw new DatabaseError('Failed to fetch record', error.code, error)
     }
@@ -112,10 +112,11 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
         .where(eq(this.table.id, id))
         .returning()
       
-      if (!result[0]) {
+      const updated = (result as T[])[0]
+      if (!updated) {
         throw new NotFoundError('Record', id)
       }
-      return result[0]
+      return updated
     } catch (error: any) {
       if (error instanceof NotFoundError) throw error
       throw new DatabaseError('Failed to update record', error.code, error)
@@ -125,7 +126,8 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
   async delete(id: string): Promise<void> {
     try {
       const result = await db.delete(this.table).where(eq(this.table.id, id)).returning()
-      if (!result[0]) {
+      const deleted = (result as any[])[0]
+      if (!deleted) {
         throw new NotFoundError('Record', id)
       }
     } catch (error: any) {
@@ -167,7 +169,7 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
 
       const data = await query
 
-      return { data, total: count }
+      return { data: data as T[], total: count }
     } catch (error: any) {
       throw new DatabaseError('Failed to fetch records', error.code, error)
     }
@@ -371,7 +373,14 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
         conditions.push(eq(calendarEvents.isAllDay, filters.isAllDay))
       }
 
-      return await db.select().from(calendarEvents).where(and(...conditions))
+      // Filter out any undefined conditions and cast to prevent type issues
+      const validConditions = conditions.filter(condition => condition !== undefined) as any[]
+      
+      if (validConditions.length === 0) {
+        return await db.select().from(calendarEvents).where(eq(calendarEvents.userId, userId))
+      }
+      
+      return await db.select().from(calendarEvents).where(and(...validConditions))
     } catch (error: any) {
       throw new DatabaseError('Failed to fetch events with filters', error.code, error)
     }

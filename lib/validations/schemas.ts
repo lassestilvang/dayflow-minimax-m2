@@ -215,3 +215,8 @@ export type SortValidation = z.infer<typeof sortSchema>
 
 export type BulkTaskUpdateValidation = z.infer<typeof bulkTaskUpdateSchema>
 export type BulkEventUpdateValidation = z.infer<typeof bulkEventUpdateSchema>
+
+// Export aliases for backward compatibility
+export const eventInsertSchema = calendarEventInsertSchema
+export const eventUpdateSchema = calendarEventUpdateSchema
+export const eventFormDataSchema = calendarEventFormDataSchema
