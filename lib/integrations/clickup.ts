@@ -99,7 +99,7 @@ export class ClickUpIntegration extends BaseIntegrationService {
   private listId?: string
   private rateLimiter: RateLimiter
 
-  constructor(config: IntegrationConfig = {}) {
+  constructor(config: Partial<IntegrationConfig> = {}) {
     super(config)
     this.rateLimiter = new RateLimiter(100, 10000) // 100 per minute, 10000 per hour
   }
@@ -117,7 +117,7 @@ export class ClickUpIntegration extends BaseIntegrationService {
 
   async authenticate(accessToken: string, refreshToken?: string, expiresAt?: Date): Promise<void> {
     this.accessToken = accessToken
-    this.refreshToken = refreshToken
+    this.refreshToken = refreshToken as string | undefined
     this.expiresAt = expiresAt
     await this.initialize()
   }
@@ -307,7 +307,7 @@ export class ClickUpIntegration extends BaseIntegrationService {
 
   async disconnect(): Promise<void> {
     this.accessToken = undefined
-    this.refreshToken = undefined
+    ;(this as any).refreshToken = undefined
     this.expiresAt = undefined
     this.listId = undefined
   }

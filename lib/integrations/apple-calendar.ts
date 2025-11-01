@@ -85,7 +85,7 @@ export class AppleCalendarIntegration extends BaseIntegrationService {
   private rateLimiter: RateLimiter
 
   constructor(config: Partial<IntegrationConfig> = {}) {
-    super(config as IntegrationConfig)
+  super(config)
     this.rateLimiter = new RateLimiter(100, 1000) // Conservative limits for CalDAV
   }
 
@@ -443,8 +443,8 @@ export class AppleCalendarIntegration extends BaseIntegrationService {
     if (recurrence.endDate) {
       const until = this.formatICalDate(recurrence.endDate)
       parts.push(`UNTIL=${until}`)
-    } else if (recurrence.count) {
-      parts.push(`COUNT=${recurrence.count}`)
+    } else if ((recurrence as any).count) {
+      parts.push(`COUNT=${(recurrence as any).count}`)
     }
 
     return parts.join(';')

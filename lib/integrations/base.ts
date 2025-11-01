@@ -269,7 +269,7 @@ export abstract class BaseIntegrationService implements BaseIntegration {
   abstract readonly apiBaseUrl: string
 
   protected accessToken?: string
-  protected refreshToken?: string
+  protected _refreshToken?: string
   protected expiresAt?: Date
   protected config?: IntegrationConfig
   protected rateLimitConfig: RateLimitConfig
@@ -293,6 +293,14 @@ export abstract class BaseIntegrationService implements BaseIntegration {
       backoffStrategy: 'exponential',
       maxRetries: 3
     }
+  }
+
+  get refreshToken(): string | undefined {
+    return this._refreshToken
+  }
+
+  set refreshToken(token: string | undefined) {
+    this._refreshToken = token
   }
 
   abstract initialize(): Promise<void>
@@ -328,7 +336,7 @@ export abstract class BaseIntegrationService implements BaseIntegration {
 
   protected async ensureAuthenticated(): Promise<void> {
     if (this.isTokenExpired()) {
-      await this.refreshToken()
+      await (this as any).refreshToken()
     }
   }
 

@@ -30,7 +30,7 @@ export class MigrationManager {
   constructor(connectionString: string) {
     this.connectionString = connectionString
     const sqlClient = neon(connectionString)
-    this.db = drizzle(sqlClient)
+    this.db = drizzle(sqlClient) as any
   }
 
   // Load migrations from directory
@@ -83,7 +83,7 @@ export class MigrationManager {
       .from(sql`migrations`)
       .orderBy(sql`applied_at`)
 
-    const appliedIds = new Set(appliedMigrations.map(m => m.id))
+    const appliedIds = new Set(appliedMigrations.map((m: any) => m.id))
 
     return migrations.map(migration => ({
       id: migration.id,

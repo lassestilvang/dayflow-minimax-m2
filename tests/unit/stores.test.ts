@@ -157,7 +157,7 @@ describe('Enhanced Calendar Store', () => {
 
     it('should add event successfully', async () => {
       // Ensure validation always succeeds
-      validateEventFormData.mockReturnValue({ success: true })
+      (validateEventFormData as any).mockReturnValue({ success: true })
 
       const eventData = {
         title: 'Test Event',
@@ -242,7 +242,7 @@ describe('Enhanced Calendar Store', () => {
     })
 
     it('should handle validation error when adding event', async () => {
-      validateEventFormData.mockReturnValue({
+      (validateEventFormData as any).mockReturnValue({
         success: false,
         error: { message: 'Invalid event data' }
       })
@@ -268,7 +268,7 @@ describe('Enhanced Calendar Store', () => {
   describe('Task Management', () => {
     beforeEach(() => {
       validateTaskFormData.mockReturnValue({ success: true })
-      taskRepository.create.mockResolvedValue({
+      (taskRepository.create as any).mockResolvedValue({
         id: 'task-1',
         title: 'Test Task',
         description: 'Test Description',
@@ -301,7 +301,7 @@ describe('Enhanced Calendar Store', () => {
     })
 
     it('should update task successfully', async () => {
-      taskRepository.update.mockResolvedValue({
+      (taskRepository.update as any).mockResolvedValue({
         id: 'task-1',
         title: 'Updated Task',
         description: 'Updated Description',
@@ -342,7 +342,7 @@ describe('Enhanced Calendar Store', () => {
     })
 
     it('should delete task successfully', async () => {
-      taskRepository.delete.mockResolvedValue({})
+      (taskRepository.delete as any).mockResolvedValue({})
 
       // Set initial task
       useEnhancedCalendarStore.setState({
@@ -426,9 +426,9 @@ describe('Enhanced Calendar Store', () => {
 
   describe('Data Access Methods', () => {
     beforeEach(() => {
-      getEventsForWeek.mockReturnValue([])
-      getEventsForDay.mockReturnValue([])
-      sortEventsByTime.mockReturnValue([])
+      (getEventsForWeek as any).mockReturnValue([])
+      (getEventsForDay as any).mockReturnValue([])
+      (sortEventsByTime as any).mockReturnValue([])
     })
 
     it('should get events for current week', () => {
@@ -447,7 +447,7 @@ describe('Enhanced Calendar Store', () => {
     })
 
     it('should check event conflicts', () => {
-      detectEventCollisions.mockReturnValue([])
+      (detectEventCollisions as any).mockReturnValue([])
 
       const mockEvent = {
         id: 'event-1',
@@ -464,7 +464,7 @@ describe('Enhanced Calendar Store', () => {
 
     it('should check if event can be moved', () => {
       // Mock detectEventCollisions to return empty array (no conflicts)
-      detectEventCollisions.mockReturnValue([])
+      (detectEventCollisions as any).mockReturnValue([])
       
       // Set up an event that exists in the store
       useEnhancedCalendarStore.setState({
@@ -491,10 +491,10 @@ describe('Enhanced Calendar Store', () => {
 
   describe('Database Synchronization', () => {
     beforeEach(() => {
-      calendarEventRepository.findByUserId.mockResolvedValue([])
-      taskRepository.findByUserId.mockResolvedValue([])
-      categoryRepository.findByUserId.mockResolvedValue([])
-      tagRepository.findByUserId.mockResolvedValue([])
+      (calendarEventRepository.findByUserId as any).mockResolvedValue([])
+      (taskRepository.findByUserId as any).mockResolvedValue([])
+      (categoryRepository.findByUserId as any).mockResolvedValue([])
+      (tagRepository.findByUserId as any).mockResolvedValue([])
     })
 
     it('should sync with database successfully', async () => {
@@ -584,7 +584,7 @@ describe('Enhanced Calendar Store', () => {
 
   describe('Demo Data', () => {
     it('should initialize with demo data', () => {
-      createDefaultEvents.mockReturnValue([
+      (createDefaultEvents as any).mockReturnValue([
         {
           id: 'demo-1',
           title: 'Demo Event',

@@ -55,12 +55,12 @@ export async function GET(request: NextRequest) {
     const integrations = await db.select().from(userIntegrations)
       .where(eq(userIntegrations.userId, userId))
 
-    const serviceMap = new Map(services.map(s => [s.name, s]))
+    const serviceMap = new Map(services.map((s: any) => [s.name, s]))
     const userIntegrationsByService = new Map(
-      integrations.map(i => [i.serviceName, i])
+      integrations.map((i: any) => [i.serviceName, i])
     )
 
-    const result = services.map(service => ({
+    const result = services.map((service: any) => ({
       ...service,
       integration: userIntegrationsByService.get(service.name) || null
     }))

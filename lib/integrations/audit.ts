@@ -262,7 +262,7 @@ export class AuditLogger {
         .where(eq(integrationAuditLog.userId, userId))
 
       if (startDate) {
-        query = query.where(and(
+        query = (query as any).where(and(
           eq(integrationAuditLog.userId, userId),
           gt(integrationAuditLog.createdAt, startDate)
         ))
@@ -539,7 +539,7 @@ export class AuditLogger {
       let query = db.delete(integrationAuditLog).where(eq(integrationAuditLog.userId, userId))
       
       if (integrationIds && integrationIds.length > 0) {
-        query = query.where(
+        query = (query as any).where(
           and(
             eq(integrationAuditLog.userId, userId),
             inArray(integrationAuditLog.userIntegrationId, integrationIds)

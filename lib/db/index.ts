@@ -13,7 +13,7 @@ if (!connectionString) {
 const sql = neon(connectionString)
 
 // Create Drizzle instance with schema
-export const db = drizzle(sql, { schema })
+export const db = drizzle(sql, { schema }) as any
 
 // Export database schema types
 export type Database = typeof schema

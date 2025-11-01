@@ -275,8 +275,8 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(true)
-      expect(result.data.status).toBe('pending')
-      expect(result.data.priority).toBe('medium')
+      expect((result as any).data?.status).toBe('pending')
+      expect((result as any).data?.priority).toBe('medium')
     })
   })
 
@@ -386,7 +386,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(true)
-      expect(result.data.isAllDay).toBe(false)
+      expect((result as any).data?.isAllDay).toBe(false)
     })
   })
 
@@ -408,8 +408,8 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(true)
-      expect(result.data.description).toBeNull()
-      expect(result.data.dueDate).toBeNull()
+      expect((result as any).data?.description).toBeNull()
+      expect((result as any).data?.dueDate).toBeNull()
     })
 
     it('should handle undefined values correctly', () => {
@@ -427,8 +427,8 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(true)
-      expect(result.data.description).toBeUndefined()
-      expect(result.data.dueDate).toBeUndefined()
+      expect((result as any).data?.description).toBeUndefined()
+      expect((result as any).data?.dueDate).toBeUndefined()
     })
 
     it('should validate boolean values', () => {
@@ -446,7 +446,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(true)
-      expect(result.data.isAllDay).toBe(true)
+      expect((result as any).data?.isAllDay).toBe(true)
     })
 
     it('should reject non-boolean isAllDay value', () => {
