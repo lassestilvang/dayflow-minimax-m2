@@ -3,31 +3,54 @@
 export interface CalendarEvent {
   id: string
   title: string
-  description?: string
+  description?: string | null
   startTime: Date
   endTime: Date
   isAllDay: boolean
-  location?: string
+  location?: string | null
   userId: string
-  category: CalendarCategory
+  categoryId?: string | null
+  recurrence: {
+    type: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
+    interval?: number
+    endDate?: Date
+    daysOfWeek?: number[]
+  }
+  reminder: {
+    enabled: boolean
+    minutesBefore: number
+  }
   createdAt: Date
   updatedAt: Date
 }
 
-export interface Task extends BaseTask {
+export interface Task {
   id: string
   title: string
-  description?: string
+  description?: string | null
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
   priority: 'low' | 'medium' | 'high' | 'urgent'
-  dueDate?: Date
-  completedAt?: Date
+  dueDate?: Date | null
+  completedAt?: Date | null
   userId: string
-  category: CalendarCategory
-  startTime?: Date
-  endTime?: Date
+  categoryId?: string | null
+  startTime?: Date | null
+  endTime?: Date | null
   isAllDay?: boolean
-  location?: string
+  location?: string | null
+  progress: number
+  estimatedDuration?: number | null
+  actualDuration?: number | null
+  recurrence: {
+    type: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
+    interval?: number
+    endDate?: Date
+    daysOfWeek?: number[]
+  }
+  reminder: {
+    enabled: boolean
+    minutesBefore: number
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -35,22 +58,33 @@ export interface Task extends BaseTask {
 export interface BaseTask {
   id: string
   title: string
-  description?: string
+  description?: string | null
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
   priority: 'low' | 'medium' | 'high' | 'urgent'
-  dueDate?: Date
-  completedAt?: Date
+  dueDate?: Date | null
+  completedAt?: Date | null
   userId: string
-  category: CalendarCategory
-  startTime?: Date
-  endTime?: Date
+  categoryId?: string | null
+  startTime?: Date | null
+  endTime?: Date | null
   isAllDay?: boolean
-  location?: string
+  location?: string | null
+  progress: number
+  estimatedDuration?: number | null
+  actualDuration?: number | null
+  recurrence: {
+    type: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
+    interval?: number
+    endDate?: Date
+    daysOfWeek?: number[]
+  }
+  reminder: {
+    enabled: boolean
+    minutesBefore: number
+  }
   createdAt: Date
   updatedAt: Date
 }
-
-export type CalendarCategory = 'work' | 'family' | 'personal' | 'travel'
 
 export interface CalendarGridSlot {
   id: string
@@ -104,7 +138,7 @@ export interface CalendarFormData {
   endTime: Date
   isAllDay: boolean
   location?: string
-  category: CalendarCategory
+  categoryId?: string
   priority?: Task['priority']
 }
 
@@ -154,12 +188,12 @@ export interface WeeklyCalendarProps {
   className?: string
 }
 
-// Colors for categories
-export const CATEGORY_COLORS = {
-  work: 'bg-blue-500/20 border-blue-500 text-blue-100',
-  family: 'bg-green-500/20 border-green-500 text-green-100',
-  personal: 'bg-orange-500/20 border-orange-500 text-orange-100',
-  travel: 'bg-purple-500/20 border-purple-500 text-purple-100',
-} as const
+export interface CategoryColors {
+  [key: string]: string
+}
 
-export type CategoryColorKey = keyof typeof CATEGORY_COLORS
+export const DEFAULT_CATEGORY_COLORS: CategoryColors = {
+  default: 'bg-gray-500/20 border-gray-500 text-gray-100',
+  work: 'bg-blue-500/20 border-blue-500 text-blue-100',
+  personal: 'bg-orange-500/20 border-orange-500 text-orange-100',
+}

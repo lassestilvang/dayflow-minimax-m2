@@ -13,12 +13,10 @@ export async function sizeMiddleware(
     const sizeInBytes = parseInt(contentLength, 10)
     
     if (sizeInBytes > MAX_REQUEST_SIZE) {
-      response.status = 413
-      response.body = JSON.stringify({ 
+      return NextResponse.json({
         error: 'Payload too large',
         message: `Request body exceeds ${MAX_REQUEST_SIZE / (1024 * 1024)}MB limit`
-      })
-      return response
+      }, { status: 413 })
     }
   }
   

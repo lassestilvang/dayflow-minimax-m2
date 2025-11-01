@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { format } from 'date-fns'
 import {
   EventOrTask,
-  CalendarCategory,
 } from '@/types/calendar'
 import {
   formatEventTime,
@@ -29,30 +28,32 @@ interface DraggableEventProps extends CalendarEventProps {
   onDragEnd?: (activeId: string, delta: { x: number; y: number }) => void
 }
 
-const getCategoryStyles = (category: CalendarCategory, isOverlay = false) => {
+const getCategoryStyles = (categoryId?: string | null, isOverlay = false) => {
   const baseStyles = 'rounded-md border-2 p-3 cursor-pointer transition-all duration-200'
   const overlayStyles = isOverlay ? 'shadow-xl border-2 z-50' : 'hover:shadow-lg hover:scale-[1.02]'
   
-  const categoryStyles = {
+  // Default styling for events/tasks without a category or unknown categories
+  const defaultStyles = cn(
+    'bg-gray-500/20 border-gray-500 text-gray-100',
+    isOverlay ? 'bg-gray-500/30' : 'hover:bg-gray-500/30'
+  )
+
+  // Category-specific styling based on common patterns
+  const categoryStyles: Record<string, string> = {
     work: cn(
       'bg-blue-500/20 border-blue-500 text-blue-100',
       isOverlay ? 'bg-blue-500/30' : 'hover:bg-blue-500/30'
-    ),
-    family: cn(
-      'bg-green-500/20 border-green-500 text-green-100',
-      isOverlay ? 'bg-green-500/30' : 'hover:bg-green-500/30'
     ),
     personal: cn(
       'bg-orange-500/20 border-orange-500 text-orange-100',
       isOverlay ? 'bg-orange-500/30' : 'hover:bg-orange-500/30'
     ),
-    travel: cn(
-      'bg-purple-500/20 border-purple-500 text-purple-100',
-      isOverlay ? 'bg-purple-500/30' : 'hover:bg-purple-500/30'
-    ),
   }
 
-  return cn(baseStyles, categoryStyles[category], overlayStyles)
+  // Use category-specific styling if available, otherwise use default
+  const categoryStyle = categoryId ? categoryStyles[categoryId] || defaultStyles : defaultStyles
+
+  return cn(baseStyles, categoryStyle, overlayStyles)
 }
 
 const EventContent: React.FC<CalendarEventProps> = ({
@@ -67,7 +68,7 @@ const EventContent: React.FC<CalendarEventProps> = ({
   return (
     <motion.div
       className={cn(
-        getCategoryStyles(event.category, isOverlay),
+        getCategoryStyles(event.categoryId, isOverlay),
         className
       )}
       onClick={() => onClick?.(event)}

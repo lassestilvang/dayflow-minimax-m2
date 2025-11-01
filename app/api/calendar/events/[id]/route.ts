@@ -61,16 +61,9 @@ export async function DELETE(
   { params }: Params
 ) {
   try {
-    const event = await calendarEventRepository.delete(params.id)
+    await calendarEventRepository.delete(params.id)
     
-    if (!event) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json(event, { status: 200 })
+    return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
     console.error('Error deleting event:', error)
     return NextResponse.json(

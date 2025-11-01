@@ -8,13 +8,13 @@ export async function corsMiddleware(
   if (request.method === 'OPTIONS') {
     const origin = request.headers.get('origin')
     
-    response.status = 200
-    response.headers.set('Access-Control-Allow-Origin', origin || '*')
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-id')
-    response.headers.set('Access-Control-Max-Age', '86400')
+    const corsResponse = NextResponse.json({}, { status: 200 })
+    corsResponse.headers.set('Access-Control-Allow-Origin', origin || '*')
+    corsResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    corsResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-id')
+    corsResponse.headers.set('Access-Control-Max-Age', '86400')
     
-    return response
+    return corsResponse
   }
   
   return response

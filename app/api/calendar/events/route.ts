@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for conflicts
-    const conflicts = await calendarEventRepository.findConflicts({
+    const conflicts = await calendarEventRepository.findConflicts(
       userId,
-      startTime: validation.data.startTime,
-      endTime: validation.data.endTime
-    })
+      validation.data.startTime,
+      validation.data.endTime
+    )
 
     // Create the event (conflicts are handled by the client)
     const event = await calendarEventRepository.create({

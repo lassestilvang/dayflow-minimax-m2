@@ -184,7 +184,10 @@ export function IntegrationCard({
                         Configure synchronization settings for {service.displayName}
                       </DialogDescription>
                     </DialogHeader>
-                    <IntegrationSettings integration={integration} />
+                    <IntegrationSettings 
+                      integration={integration} 
+                      onClose={() => setShowSettings(false)} 
+                    />
                   </DialogContent>
                 </Dialog>
 
@@ -229,7 +232,7 @@ export function IntegrationCard({
   )
 }
 
-function IntegrationSettings({ integration }: { integration: any }) {
+function IntegrationSettings({ integration, onClose }: { integration: any, onClose: () => void }) {
   const [settings, setSettings] = useState({
     autoSync: integration?.syncSettings?.autoSync ?? true,
     syncInterval: integration?.syncSettings?.syncInterval ?? 15,
@@ -242,6 +245,7 @@ function IntegrationSettings({ integration }: { integration: any }) {
   const handleSave = async () => {
     // Implementation would save settings to backend
     console.log('Saving settings:', settings)
+    onClose()
   }
 
   return (
@@ -344,7 +348,7 @@ function IntegrationSettings({ integration }: { integration: any }) {
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => setShowSettings(false)}>
+        <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
         <Button onClick={handleSave}>

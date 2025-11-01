@@ -28,13 +28,16 @@ export async function rateLimitMiddleware(
   clientData.count++
   
   if (clientData.count > MAX_REQUESTS) {
-    response.status = 429
-    response.headers.set('Retry-After', Math.ceil((clientData.resetTime - now) / 1000).toString())
-    response.body = JSON.stringify({
+    const retryAfter = Math.ceil((clientData.resetTime - now) / 1000)
+    return NextResponse.json({
       error: 'Too Many Requests',
       message: `Rate limit exceeded. Max ${MAX_REQUESTS} requests per ${WINDOW_SIZE / 60000} minute.`
+    }, {
+      status: 429,
+      headers: {
+        'Retry-After': retryAfter.toString()
+      }
     })
-    return response
   }
   
   return response

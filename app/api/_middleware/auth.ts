@@ -8,9 +8,7 @@ export async function authMiddleware(
   const userId = request.headers.get('x-user-id')
   
   if (!userId) {
-    response.status = 401
-    response.body = JSON.stringify({ error: 'Unauthorized' })
-    return response
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Add user info to request for downstream handlers

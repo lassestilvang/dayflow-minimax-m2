@@ -83,16 +83,9 @@ export async function DELETE(
       )
     }
 
-    const task = await taskRepository.delete(params.id)
+    await taskRepository.delete(params.id)
     
-    if (!task) {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json(task, { status: 200 })
+    return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
     console.error('Error deleting task:', error)
     return NextResponse.json(

@@ -126,10 +126,10 @@ const DayColumn: React.FC<DayColumnProps> = ({
               className={cn(
                 'absolute left-1 right-1 rounded-md border-2 p-2 text-xs font-medium pointer-events-auto',
                 'hover:shadow-lg transition-all duration-200',
-                event.category === 'work' && 'bg-blue-500/20 border-blue-500 text-blue-100 hover:bg-blue-500/30',
-                event.category === 'family' && 'bg-green-500/20 border-green-500 text-green-100 hover:bg-green-500/30',
-                event.category === 'personal' && 'bg-orange-500/20 border-orange-500 text-orange-100 hover:bg-orange-500/30',
-                event.category === 'travel' && 'bg-purple-500/20 border-purple-500 text-purple-100 hover:bg-purple-500/30'
+                event.categoryId === 'work' && 'bg-blue-500/20 border-blue-500 text-blue-100 hover:bg-blue-500/30',
+                event.categoryId === 'family' && 'bg-green-500/20 border-green-500 text-green-100 hover:bg-green-500/30',
+                event.categoryId === 'personal' && 'bg-orange-500/20 border-orange-500 text-orange-100 hover:bg-orange-500/30',
+                event.categoryId === 'travel' && 'bg-purple-500/20 border-purple-500 text-purple-100 hover:bg-purple-500/30'
               )}
               style={{
                 top: `${startPosition + 60}px`, // +60px for day header

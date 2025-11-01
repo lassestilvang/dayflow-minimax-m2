@@ -8,7 +8,7 @@ export { WeekNavigation, CompactWeekNavigation } from './WeekNavigation'
 export type {
   CalendarEvent as CalendarEventType,
   Task,
-  CalendarCategory,
+  
   CalendarWeek,
   CalendarDay,
   EventOrTask,
