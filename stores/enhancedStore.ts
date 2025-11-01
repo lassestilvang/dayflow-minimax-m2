@@ -355,7 +355,8 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
 
         // Category and Tag management
         addCategory: async (categoryData: { name: string; color: string; icon?: string }) => {
-          const { userId = 'demo-user', ...rest } = categoryData
+          const userId = 'demo-user'
+          const rest = categoryData
           
           try {
             const result = {
@@ -376,13 +377,13 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
           }
         },
 
-        updateCategory: async (id, updates) => {
+        updateCategory: async (id: string, updates: { name?: string; color?: string; icon?: string }) => {
           try {
             const result = { id, ...updates }
             
             set((state) => ({
               categories: state.categories.map(cat =>
-                cat.id === id ? result : cat
+                cat.id === id ? { ...cat, ...updates } : cat
               ),
               error: null,
             }))
@@ -408,8 +409,9 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
           }
         },
 
-        addTag: async (tagData) => {
-          const { userId = 'demo-user', ...rest } = tagData
+        addTag: async (tagData: { name: string; color: string }) => {
+          const userId = 'demo-user'
+          const rest = tagData
           
           try {
             const result = {
@@ -430,13 +432,13 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
           }
         },
 
-        updateTag: async (id, updates) => {
+        updateTag: async (id: string, updates: { name?: string; color?: string }) => {
           try {
             const result = { id, ...updates }
             
             set((state) => ({
               tags: state.tags.map(tag =>
-                tag.id === id ? result : tag
+                tag.id === id ? { ...tag, ...updates } : tag
               ),
               error: null,
             }))
@@ -708,7 +710,7 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
           if (filters.categories?.length) {
             const categoryIds = new Set(filters.categories)
             allEvents = allEvents.filter(event => 
-              'categoryId' in event && categoryIds.has(event.categoryId)
+              'categoryId' in event && categoryIds.has(event.categoryId || '')
             )
           }
           

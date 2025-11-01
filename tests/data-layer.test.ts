@@ -164,9 +164,9 @@ vi.mock('@/lib/db', async () => {
             }
             
             return {
-              limit: (count) => Promise.resolve(count ? filtered.slice(0, count) : filtered),
+              limit: (count: number) => Promise.resolve(count ? filtered.slice(0, count) : filtered),
               orderBy: () => ({
-                limit: (count) => ({
+                limit: (count: number) => ({
                   offset: () => Promise.resolve(filtered.slice(0, count))
                 })
               }),
@@ -179,18 +179,18 @@ vi.mock('@/lib/db', async () => {
             })
           }),
           orderBy: () => ({
-            limit: (count) => ({
+            limit: (count: number) => ({
               offset: () => Promise.resolve(data.slice(0, count))
             })
           }),
-          limit: (count) => Promise.resolve(count ? data.slice(0, count) : data)
+          limit: (count: number) => Promise.resolve(count ? data.slice(0, count) : data)
         }
       }
     }),
     
     update: () => ({
-      set: (data) => ({
-        where: (condition) => ({
+      set: (data: any) => ({
+        where: (condition: any) => ({
           returning: async () => {
             let found = null
             
@@ -211,7 +211,7 @@ vi.mock('@/lib/db', async () => {
     }),
     
     delete: () => ({
-      where: (condition) => ({
+      where: (condition: any) => ({
         returning: async () => {
           let found = null
           
@@ -230,7 +230,7 @@ vi.mock('@/lib/db', async () => {
       })
     }),
     
-    transaction: async (callback) => {
+    transaction: async (callback: (tx: any) => Promise<any>) => {
       const tx = {
         update: () => ({
           set: () => ({
@@ -262,7 +262,7 @@ vi.mock('@/lib/db', async () => {
     ilike: mockIlike,
     desc: mockDesc,
     asc: mockAsc,
-    sql: (strings, ...values) => ({ type: 'sql', strings, values }),
+    sql: (strings: TemplateStringsArray, ...values: any[]) => ({ type: 'sql', strings, values }),
     // Mock types
     type: {
       User: {},
@@ -283,7 +283,7 @@ describe('Data Access Layer', () => {
     vi.clearAllMocks()
     
     // Override repository methods to use mock data
-    vi.spyOn(userRepository, 'findByEmail').mockImplementation((email) => {
+    vi.spyOn(userRepository, 'findByEmail').mockImplementation((email: string) => {
       if (email === 'test@example.com') {
         return Promise.resolve({
           id: '1',
@@ -293,12 +293,12 @@ describe('Data Access Layer', () => {
           preferences: {},
           createdAt: new Date(),
           updatedAt: new Date()
-        })
+        } as any)
       }
       return Promise.resolve(null)
     })
 
-    vi.spyOn(taskRepository, 'update').mockImplementation((id, data) => {
+    vi.spyOn(taskRepository, 'update').mockImplementation((id: string, data: any) => {
       if (id === '1') {
         return Promise.resolve({
           id: '1',
@@ -311,7 +311,7 @@ describe('Data Access Layer', () => {
           userId: '550e8400-e29b-41d4-a716-446655440000',
           createdAt: new Date(),
           updatedAt: new Date()
-        })
+        } as any)
       }
       throw new NotFoundError('Record', id)
     })
@@ -543,9 +543,9 @@ describe('Validation Schemas', () => {
 })
 
 describe('Sync Service', () => {
-  let syncService
-  let optimisticUpdateManager
-  let conflictResolutionService
+  let syncService: any
+  let optimisticUpdateManager: any
+  let conflictResolutionService: any
 
   beforeEach(() => {
     syncService = new SyncService()
