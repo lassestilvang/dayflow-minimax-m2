@@ -81,14 +81,14 @@ vi.mock('@/lib/db', async () => {
   }
 
   // Mock Drizzle ORM functions
-  const mockEq = (column, value) => ({ type: 'eq', column, value })
-  const mockLte = (column, value) => ({ type: 'lte', column, value })
-  const mockGte = (column, value) => ({ type: 'gte', column, value })
-  const mockAnd = (...conditions) => ({ type: 'and', conditions })
-  const mockBetween = (column, start, end) => ({ type: 'between', column, start, end })
-  const mockIlike = (column, pattern) => ({ type: 'ilike', column, pattern })
-  const mockDesc = (column) => ({ type: 'desc', column })
-  const mockAsc = (column) => ({ type: 'asc', column })
+  const mockEq = (column: any, value: any) => ({ type: 'eq', column, value })
+  const mockLte = (column: any, value: any) => ({ type: 'lte', column, value })
+  const mockGte = (column: any, value: any) => ({ type: 'gte', column, value })
+  const mockAnd = (...conditions: any[]) => ({ type: 'and', conditions })
+  const mockBetween = (column: any, start: any, end: any) => ({ type: 'between', column, start, end })
+  const mockIlike = (column: any, pattern: any) => ({ type: 'ilike', column, pattern })
+  const mockDesc = (column: any) => ({ type: 'desc', column })
+  const mockAsc = (column: any) => ({ type: 'asc', column })
 
   // Mock table objects
   const users = { id: 'users', email: 'users-email', workosId: 'users-workosId', name: 'users-name', preferences: 'users-preferences' }
@@ -114,7 +114,7 @@ vi.mock('@/lib/db', async () => {
           // Simulate unique constraint violations
           if (data.email) {
             if (mockData.users.some(u => u.email === data.email)) {
-              const error = new Error('duplicate key value violates unique constraint "users_email_unique"')
+              const error = new Error('duplicate key value violates unique constraint "users_email_unique"') as any
               error.code = '23505'
               throw error
             }
@@ -131,14 +131,14 @@ vi.mock('@/lib/db', async () => {
     }),
     
     select: () => ({
-      from: (table) => {
-        let data = []
+      from: (table: any) => {
+        let data: any[] = []
         if (table === users) data = mockData.users
         else if (table === tasks) data = mockData.tasks
         else if (table === calendarEvents) data = mockData.events
         
         return {
-          where: (condition) => {
+          where: (condition: any) => {
             let filtered = [...data]
             
             // Simple condition filtering
@@ -146,7 +146,7 @@ vi.mock('@/lib/db', async () => {
               filtered = filtered.filter(item => item[condition.column.name] === condition.value)
             } else if (condition?.type === 'and' && condition.conditions) {
               filtered = filtered.filter(item => {
-                return condition.conditions.every(cond => {
+                return condition.conditions.every((cond: any) => {
                   if (cond.type === 'eq') {
                     return item[cond.column.name] === cond.value
                   }

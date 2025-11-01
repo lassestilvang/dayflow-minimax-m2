@@ -84,8 +84,8 @@ export class AppleCalendarIntegration extends BaseIntegrationService {
   private calendarUrl?: string
   private rateLimiter: RateLimiter
 
-  constructor(config: IntegrationConfig = {}) {
-    super(config)
+  constructor(config: Partial<IntegrationConfig> = {}) {
+    super(config as IntegrationConfig)
     this.rateLimiter = new RateLimiter(100, 1000) // Conservative limits for CalDAV
   }
 
@@ -187,19 +187,35 @@ export class AppleCalendarIntegration extends BaseIntegrationService {
     return this.syncEvents()
   }
 
-  async createTask(task: EventData): Promise<ExternalEvent> {
-    return this.createEvent(task)
+  async createTask(task: any): Promise<any> {
+    // Convert task to event format for Apple Calendar
+    const eventData: EventData = {
+      title: task.title,
+      description: task.description,
+      startTime: task.startTime || task.dueDate || new Date(),
+      endTime: task.endTime || task.dueDate || new Date(),
+      isAllDay: task.isAllDay || false
+    }
+    return this.createEvent(eventData)
   }
 
-  async updateTask(externalId: string, task: EventData): Promise<ExternalEvent> {
-    return this.updateEvent(externalId, task)
+  async updateTask(externalId: string, task: any): Promise<any> {
+    // Convert task to event format for Apple Calendar
+    const eventData: EventData = {
+      title: task.title,
+      description: task.description,
+      startTime: task.startTime || task.dueDate || new Date(),
+      endTime: task.endTime || task.dueDate || new Date(),
+      isAllDay: task.isAllDay || false
+    }
+    return this.updateEvent(externalId, eventData)
   }
 
   async deleteTask(externalId: string): Promise<void> {
     await this.deleteEvent(externalId)
   }
 
-  async getTask(externalId: string): Promise<ExternalEvent | null> {
+  async getTask(externalId: string): Promise<any> {
     return this.getEvent(externalId)
   }
 

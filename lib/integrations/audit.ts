@@ -3,9 +3,9 @@
  * Comprehensive logging and security monitoring for integration framework
  */
 
-import { UserIntegration, IntegrationAuditLog } from '../db/integrations-schema'
+import { UserIntegration, IntegrationAuditLog, integrationAuditLog } from '../db/integrations-schema'
 import { db } from '../db'
-import { eq, and, gt, desc } from 'drizzle-orm'
+import { eq, and, gt, desc, inArray } from 'drizzle-orm'
 
 interface AuditEvent {
   userIntegrationId: string
@@ -540,8 +540,10 @@ export class AuditLogger {
       
       if (integrationIds && integrationIds.length > 0) {
         query = query.where(
-          integrationAuditLog.userId.equals(userId) &&
-          integrationAuditLog.userIntegrationId.in(integrationIds)
+          and(
+            eq(integrationAuditLog.userId, userId),
+            inArray(integrationAuditLog.userIntegrationId, integrationIds)
+          )
         )
       }
 

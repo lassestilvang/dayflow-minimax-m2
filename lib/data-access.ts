@@ -361,12 +361,15 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
       const conditions = [eq(calendarEvents.userId, userId)]
       
       if (filters.dateRange) {
-        conditions.push(
-          and(
-            lte(calendarEvents.startTime, filters.dateRange.end),
-            gte(calendarEvents.endTime, filters.dateRange.start)
-          )
+        const startDate = filters.dateRange.start || new Date()
+        const endDate = filters.dateRange.end || new Date()
+        const dateCondition = and(
+          lte(calendarEvents.startTime, endDate),
+          gte(calendarEvents.endTime, startDate)
         )
+        if (dateCondition) {
+          conditions.push(dateCondition)
+        }
       }
       
       if (filters.isAllDay !== undefined) {

@@ -274,8 +274,18 @@ export abstract class BaseIntegrationService implements BaseIntegration {
   protected config?: IntegrationConfig
   protected rateLimitConfig: RateLimitConfig
 
-  constructor(config: IntegrationConfig = {} as IntegrationConfig) {
-    this.config = config
+  constructor(config: Partial<IntegrationConfig> = {}) {
+    this.config = {
+      autoSync: true,
+      syncInterval: 15,
+      syncDirection: 'two_way',
+      syncTasks: true,
+      syncEvents: true,
+      conflictResolution: 'manual' as const,
+      fieldMapping: {},
+      filters: {},
+      ...config
+    }
     this.rateLimitConfig = {
       requestsPerMinute: 60,
       requestsPerHour: 1000,

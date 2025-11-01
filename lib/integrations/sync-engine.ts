@@ -9,6 +9,7 @@ import { UserIntegration, SyncOperation, SyncQueueItem, ExternalItem } from '../
 import { taskRepository, calendarEventRepository } from '../data-access'
 import { db } from '../db'
 import { and, eq, gt, lte, sql } from 'drizzle-orm'
+import { userIntegrations, externalItems } from '../db/integrations-schema'
 import { NotionIntegration } from './notion'
 import { ClickUpIntegration } from './clickup'
 import { LinearIntegration } from './linear'
@@ -447,7 +448,6 @@ export class SyncEngine {
               conflict: conflictDetection
             }
             
-            job.conflicts.push(conflict)
             result.conflicts.push(conflict)
           } else {
             // No conflicts, check if update needed
@@ -516,7 +516,6 @@ export class SyncEngine {
               conflict: conflictDetection
             }
             
-            job.conflicts.push(conflict)
             result.conflicts.push(conflict)
           } else {
             // No conflicts, check if update needed
@@ -740,10 +739,10 @@ export class SyncEngine {
           const latestItem = conflict.dayflowItem.updatedAt >= conflict.externalItem.updatedAt
             ? conflict.dayflowItem
             : conflict.externalItem
-          await this.applyResolution(conflict, latestItem === conflict.dayflowItem ? 'keep_dayflow' : 'keep_external')
+          await this.applyResolution(job, conflict, latestItem === conflict.dayflowItem ? 'keep_dayflow' : 'keep_external')
           break
         case 'source':
-          await this.applyResolution(conflict, 'keep_external')
+          await this.applyResolution(job, conflict, 'keep_external')
           break
         case 'merge':
           // Simple merge strategy - combine fields

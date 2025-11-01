@@ -1,4 +1,4 @@
-import type { MatcherContext, Tester, RawMatcherFn } from 'vitest'
+import { vi } from 'vitest'
 
 // Custom assertion utilities
 export const assertionUtils = {
@@ -300,33 +300,35 @@ export const assertionUtils = {
   },
 }
 
-// Extend Vitest expect with custom matchers
-declare module 'vitest' {
-  interface TestAssertion<T = any> extends Assertion<T> {
-    toBeWithinRange(floor: number, ceiling: number): T extends number ? void : never
-    toBeValidEmail(): T extends string ? void : never
-    toHaveRequiredProperties(required: string[]): T extends object ? void : never
-    toBeWithinDateRange(startDate: Date, endDate: Date): T extends Date ? void : never
-    toHaveUniqueValues(): T extends any[] ? void : never
-    toContainIgnoreCase(substring: string): T extends string ? void : never
-    toContainAllItems(expected: any[]): T extends any[] ? void : never
-    toMatchPartial(expected: any): T extends object ? void : never
-    toBeValidURL(): T extends string ? void : never
-    toBeInstanceOfClass(expectedClass: Function): void
-    toBeToday(): T extends Date ? void : never
-    toBeSorted(): T extends any[] ? void : never
-    toBeValidUUID(): T extends string ? void : never
-    toBeOneOf(expectedArray: any[]): void
-    toBeAfter(date: Date): T extends Date ? void : never
-    toBeBefore(date: Date): T extends Date ? void : never
-    toHaveLength(expectedLength: number): T extends any[] ? void : never
-    toBePalindrome(): T extends string ? void : never
-    toBeEven(): T extends number ? void : never
-    toBeOdd(): T extends number ? void : never
-    toStartWith(prefix: string): T extends string ? void : never
-    toEndWith(suffix: string): T extends string ? void : never
-    toBeNil(): void
-    toBeTruthy(): void
-    toBeFalsy(): void
+// TypeScript type declaration for custom matchers
+declare global {
+  namespace Vi {
+    interface Assertion<T = any> {
+      toBeWithinRange(floor: number, ceiling: number): T extends number ? void : never
+      toBeValidEmail(): T extends string ? void : never
+      toHaveRequiredProperties(required: string[]): T extends object ? void : never
+      toBeWithinDateRange(startDate: Date, endDate: Date): T extends Date ? void : never
+      toHaveUniqueValues(): T extends any[] ? void : never
+      toContainIgnoreCase(substring: string): T extends string ? void : never
+      toContainAllItems(expected: any[]): T extends any[] ? void : never
+      toMatchPartial(expected: any): T extends object ? void : never
+      toBeValidURL(): T extends string ? void : never
+      toBeInstanceOfClass(expectedClass: Function): void
+      toBeToday(): T extends Date ? void : never
+      toBeSorted(): T extends any[] ? void : never
+      toBeValidUUID(): T extends string ? void : never
+      toBeOneOf(expectedArray: any[]): void
+      toBeAfter(date: Date): T extends Date ? void : never
+      toBeBefore(date: Date): T extends Date ? void : never
+      toHaveLength(expectedLength: number): T extends any[] ? void : never
+      toBePalindrome(): T extends string ? void : never
+      toBeEven(): T extends number ? void : never
+      toBeOdd(): T extends number ? void : never
+      toStartWith(prefix: string): T extends string ? void : never
+      toEndWith(suffix: string): T extends string ? void : never
+      toBeNil(): void
+      toBeTruthy(): void
+      toBeFalsy(): void
+    }
   }
 }

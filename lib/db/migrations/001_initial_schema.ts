@@ -1,4 +1,8 @@
-import { Migration } from 'drizzle-kit/migrations/sql'
+// Migration interface for database schema updates
+export interface Migration {
+  up: (db: any) => Promise<void>
+  down: (db: any) => Promise<void>
+}
 
 export const up = async (db: any) => {
   // Create users table

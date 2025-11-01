@@ -70,8 +70,8 @@ interface EnhancedCalendarStore {
   tasks: Task[]
   
   // Data management
-  categories: { id: string; name: string; color: string; icon?: string }[]
-  tags: { id: string; name: string; color: string }[]
+  categories: { id: string; name: string; color: string; icon?: string; userId?: string }[]
+  tags: { id: string; name: string; color: string; userId?: string }[]
   
   // View settings
   viewSettings: CalendarViewSettings
@@ -355,12 +355,13 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
 
         // Category and Tag management
         addCategory: async (categoryData) => {
-          const { userId = 'demo-user' } = categoryData
+          const { userId = 'demo-user', ...rest } = categoryData
           
           try {
             const result = {
-              ...categoryData,
+              ...rest,
               id: `category_${Date.now()}`,
+              userId,
             }
             
             set((state) => ({
@@ -408,12 +409,13 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
         },
 
         addTag: async (tagData) => {
-          const { userId = 'demo-user' } = tagData
+          const { userId = 'demo-user', ...rest } = tagData
           
           try {
             const result = {
-              ...tagData,
+              ...rest,
               id: `tag_${Date.now()}`,
+              userId,
             }
             
             set((state) => ({
@@ -515,10 +517,10 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
           
           try {
             const [events, tasks, categories, tags] = await Promise.all([
-              calendarEventRepository.findByUserId?.(userId) || [],
-              taskRepository.findByUserId?.(userId) || [],
-              categoryRepository.findByUserId?.(userId) || [],
-              tagRepository.findByUserId?.(userId) || [],
+              calendarEventRepository.findByUserId?.(userId) as any || [],
+              taskRepository.findByUserId?.(userId) as any || [],
+              categoryRepository.findByUserId?.(userId) as any || [],
+              tagRepository.findByUserId?.(userId) as any || [],
             ])
             
             set({
