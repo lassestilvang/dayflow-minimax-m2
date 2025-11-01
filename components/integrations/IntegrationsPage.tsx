@@ -5,18 +5,16 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { IntegrationCard } from './IntegrationCard'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Settings, 
-  Plus, 
-  RefreshCw, 
-  AlertCircle, 
+import {
+  Settings,
+  Plus,
+  RefreshCw,
+  AlertCircle,
   CheckCircle,
   Clock,
   ArrowRight
@@ -51,6 +49,11 @@ interface SyncJob {
   conflicts: any[]
 }
 
+interface ServiceWithIntegration {
+  service: IntegrationService
+  integration?: UserIntegration
+}
+
 export function IntegrationsPage({ userId }: { userId: string }) {
   const [services, setServices] = useState<IntegrationService[]>([])
   const [integrations, setIntegrations] = useState<UserIntegration[]>([])
@@ -58,19 +61,7 @@ export function IntegrationsPage({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all')
 
-  useEffect(() => {
-    loadIntegrations()
-    loadActiveJobs()
-    
-    // Set up polling for job updates
-    const interval = setInterval(() => {
-      loadActiveJobs()
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [loadIntegrations])
-
-  const loadIntegrations = async () => {
+  const loadIntegrations = useCallback(async () => {
     try {
       const response = await fetch(`/api/integrations?userId=${userId}`)
       const data = await response.json()
@@ -85,14 +76,26 @@ export function IntegrationsPage({ userId }: { userId: string }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
 
-  const loadActiveJobs = async () => {
+  const loadActiveJobs = useCallback(async () => {
     // This would fetch active sync jobs
     // For now, using mock data
     const mockJobs: SyncJob[] = []
     setActiveJobs(mockJobs)
-  }
+  }, [])
+
+  useEffect(() => {
+    loadIntegrations()
+    loadActiveJobs()
+    
+    // Set up polling for job updates
+    const interval = setInterval(() => {
+      loadActiveJobs()
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [loadIntegrations, loadActiveJobs])
 
   const handleConnect = async (serviceName: string) => {
     try {
@@ -172,12 +175,14 @@ export function IntegrationsPage({ userId }: { userId: string }) {
     }
   }
 
-  const getServiceWithIntegration = (service: IntegrationService) => {
+  const getServiceWithIntegration = (service: IntegrationService): ServiceWithIntegration => {
     const integration = integrations.find(i => i.serviceName === service.name)
     return { service, integration }
   }
 
-  const filteredServices = services.filter(service => {
+  const servicesWithIntegrations: ServiceWithIntegration[] = services.map(getServiceWithIntegration)
+
+  const filteredServices = servicesWithIntegrations.filter(({ service }) => {
     if (activeTab === 'all') return true
     if (activeTab === 'tasks') return service.type === 'task_management'
     if (activeTab === 'calendar') return service.type === 'calendar'
@@ -253,42 +258,53 @@ export function IntegrationsPage({ userId }: { userId: string }) {
         localStorage.removeItem('oauth_service')
       }} />
 
+      {/* Simple Tab Navigation */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+        {[
+          { key: 'all', label: 'All Services' },
+          { key: 'tasks', label: 'Task Management' },
+          { key: 'calendar', label: 'Calendar' },
+          { key: 'connected', label: 'Connected' },
+          { key: 'active', label: 'Active' }
+        ].map(tab => (
+          <Button
+            key={tab.key}
+            variant={activeTab === tab.key ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setActiveTab(tab.key)}
+            className="flex-1"
+          >
+            {tab.label}
+          </Button>
+        ))}
+      </div>
+
       {/* Services Grid */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="all">All Services</TabsTrigger>
-          <TabsTrigger value="tasks">Task Management</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="connected">Connected</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-        </TabsList>
+      <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredServices.map(({ service, integration }) => (
+            <IntegrationCard
+              key={service.id}
+              service={service}
+              integration={integration}
+              onConnect={handleConnect}
+              onDisconnect={handleDisconnect}
+              onSync={handleSync}
+              onToggleActive={handleToggleActive}
+            />
+          ))}
+        </div>
 
-        <TabsContent value={activeTab} className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredServices.map(({ service, integration }) => (
-              <IntegrationCard
-                key={service.id}
-                service={service}
-                integration={integration}
-                onConnect={handleConnect}
-                onDisconnect={handleDisconnect}
-                onSync={handleSync}
-                onToggleActive={handleToggleActive}
-              />
-            ))}
+        {filteredServices.length === 0 && (
+          <div className="text-center py-12">
+            <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No services found</h3>
+            <p className="text-muted-foreground">
+              No services match the current filter. Try selecting a different tab.
+            </p>
           </div>
-
-          {filteredServices.length === 0 && (
-            <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No services found</h3>
-              <p className="text-muted-foreground">
-                No services match the current filter. Try selecting a different tab.
-              </p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
 
       {/* Help Section */}
       <Card>

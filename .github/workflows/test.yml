@@ -52,7 +52,7 @@ jobs:
         name: codecov-umbrella
     
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results-${{ matrix.node-version }}
@@ -84,7 +84,7 @@ jobs:
       run: npm run test:performance
     
     - name: Upload performance results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: performance-results
@@ -141,7 +141,7 @@ jobs:
       run: npx playwright test --project=chromium tests/accessibility
     
     - name: Upload accessibility results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: accessibility-results

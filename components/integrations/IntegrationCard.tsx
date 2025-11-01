@@ -6,6 +6,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -116,7 +117,13 @@ export function IntegrationCard({
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
               {service.iconUrl ? (
-                <img src={service.iconUrl} alt={service.displayName} className="h-6 w-6" />
+                <Image
+                  src={service.iconUrl}
+                  alt={service.displayName}
+                  width={24}
+                  height={24}
+                  className="h-6 w-6"
+                />
               ) : (
                 service.displayName.charAt(0)
               )}

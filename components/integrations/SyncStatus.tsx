@@ -5,16 +5,16 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  Clock, 
-  RefreshCw, 
+import {
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  RefreshCw,
   XCircle,
   Play,
   Pause,
@@ -48,16 +48,7 @@ export function SyncStatus({ userId, onJobAction, className }: SyncStatusProps) 
   const [jobs, setJobs] = useState<SyncJob[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  useEffect(() => {
-    loadSyncJobs()
-    
-    // Set up real-time updates
-    const interval = setInterval(loadSyncJobs, 2000)
-    
-    return () => clearInterval(interval)
-  }, [userId])
-
-  const loadSyncJobs = async () => {
+  const loadSyncJobs = useCallback(async () => {
     setIsRefreshing(true)
     try {
       // In a real implementation, this would fetch from the sync engine
@@ -69,7 +60,16 @@ export function SyncStatus({ userId, onJobAction, className }: SyncStatusProps) 
     } finally {
       setIsRefreshing(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    loadSyncJobs()
+    
+    // Set up real-time updates
+    const interval = setInterval(loadSyncJobs, 2000)
+    
+    return () => clearInterval(interval)
+  }, [loadSyncJobs])
 
   const getStatusIcon = (status: SyncJob['status']) => {
     switch (status) {

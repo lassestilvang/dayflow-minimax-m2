@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -264,7 +264,7 @@ export const WeeklyCalendar: React.FC = () => {
     setError,
   } = useWeeklyCalendarStore()
 
-  const allEvents = [...events, ...tasks]
+  const allEvents = useMemo(() => [...events, ...tasks], [events, tasks])
 
   // Local state
   const [activeId, setActiveId] = useState<string | null>(null)
