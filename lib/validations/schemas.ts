@@ -8,7 +8,7 @@ export const timestampSchema = z.date({
   invalid_type_error: 'Invalid date format',
 })
 
-export const optionalTimestampSchema = z.date().optional()
+export const optionalTimestampSchema = z.date().nullable().optional()
 
 // User schemas
 export const userSchema = z.object({
@@ -36,7 +36,7 @@ export const taskPrioritySchema = z.enum(['low', 'medium', 'high', 'urgent'] as 
 export const taskSchema = z.object({
   id: idSchema,
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  description: z.string().max(1000, 'Description too long').optional(),
+  description: z.string().max(1000, 'Description too long').nullable().optional(),
   status: taskStatusSchema.default('pending'),
   priority: taskPrioritySchema.default('medium'),
   dueDate: optionalTimestampSchema,
@@ -59,13 +59,13 @@ export const taskUpdateSchema = taskInsertSchema.partial().extend({
 
 export const taskFormDataSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  description: z.string().max(1000, 'Description too long').optional(),
+  description: z.string().max(1000, 'Description too long').nullable().optional(),
   priority: taskPrioritySchema.default('medium'),
   dueDate: optionalTimestampSchema,
 })
 
-// Calendar Event schemas
-export const calendarEventSchema = z.object({
+// Calendar Event schemas - Create base schema first
+const baseCalendarEventSchema = z.object({
   id: idSchema,
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
   description: z.string().max(1000, 'Description too long').optional(),
@@ -76,19 +76,25 @@ export const calendarEventSchema = z.object({
   userId: idSchema,
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
-}).refine((data) => data.endTime > data.startTime, {
-  message: 'End time must be after start time',
-  path: ['endTime'],
 })
 
-export const calendarEventInsertSchema = calendarEventSchema.omit({
+// Create the insert schema first
+export const calendarEventInsertSchema = baseCalendarEventSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 })
 
+// Create the main schema with refinement from base
+export const calendarEventSchema = baseCalendarEventSchema.refine((data) => data.endTime > data.startTime, {
+  message: 'End time must be after start time',
+  path: ['endTime'],
+})
+
+// Update schema
 export const calendarEventUpdateSchema = calendarEventInsertSchema.partial()
 
+// Form data schema
 export const calendarEventFormDataSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
   description: z.string().max(1000, 'Description too long').optional(),
@@ -107,9 +113,6 @@ export const searchQuerySchema = z.string().min(1, 'Search query is required').m
 export const dateRangeSchema = z.object({
   start: timestampSchema,
   end: timestampSchema,
-}).refine((data) => data.end >= data.start, {
-  message: 'End date must be after start date',
-  path: ['end'],
 })
 
 export const taskFilterSchema = z.object({
@@ -160,6 +163,26 @@ export const validateEventData = (data: unknown) => {
 
 export const validateUserData = (data: unknown) => {
   return userSchema.safeParse(data)
+}
+
+export const validateTaskInsertData = (data: unknown) => {
+  return taskInsertSchema.safeParse(data)
+}
+
+export const validateEventInsertData = (data: unknown) => {
+  return calendarEventInsertSchema.safeParse(data)
+}
+
+export const validateUserInsertData = (data: unknown) => {
+  return userInsertSchema.safeParse(data)
+}
+
+export const validateTaskUpdateData = (data: unknown) => {
+  return taskUpdateSchema.safeParse(data)
+}
+
+export const validateEventUpdateData = (data: unknown) => {
+  return calendarEventUpdateSchema.safeParse(data)
 }
 
 export const validateTaskFormData = (data: unknown) => {

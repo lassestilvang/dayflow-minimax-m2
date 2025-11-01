@@ -418,10 +418,10 @@ export const eventFixtures = {
     },
   ],
 
-  // Mock API responses
+  // Mock API responses (will be populated after validEvents is defined)
   mockAPIResponses: {
     success: {
-      event: this.validEvents[0],
+      event: null as any, // Will be set after validEvents is available
       message: 'Event created successfully',
     },
     failure: {
@@ -472,6 +472,9 @@ export const eventFixtures = {
     ],
   },
 }
+
+// Fix the mock API responses after validEvents is defined
+eventFixtures.mockAPIResponses.success.event = eventFixtures.validEvents[0]
 
 // Export type for fixture validation
 export type EventFixtures = typeof eventFixtures

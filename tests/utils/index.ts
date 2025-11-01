@@ -10,12 +10,14 @@ import { databaseUtils } from './database'
 import { mockUtils } from './mocks'
 import { assertionUtils } from './assertions'
 import { generatorUtils } from './generators'
+import { helperUtils } from './helpers'
 
 export const testUtils = {
   ...databaseUtils,
   ...mockUtils,
   ...assertionUtils,
   ...generatorUtils,
+  ...helperUtils,
 }
 
 // Default export for convenience

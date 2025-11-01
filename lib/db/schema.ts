@@ -50,7 +50,7 @@ export const tasks = pgTable('tasks', {
   completedAt: timestamp('completed_at', { withTimezone: true }),
   startTime: timestamp('start_time', { withTimezone: true }),
   endTime: timestamp('end_time', { withTimezone: true }),
-  progress: integer('progress').notNull().default(0).check(sql => sql >= 0 && sql <= 100),
+  progress: integer('progress').notNull().default(0),
   estimatedDuration: integer('estimated_duration'), // in minutes
   actualDuration: integer('actual_duration'), // in minutes
   recurrence: json('recurrence').$type<{

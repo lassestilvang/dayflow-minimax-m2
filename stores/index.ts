@@ -64,24 +64,49 @@ export const useTaskStore = create<TaskStore>()(
         // Redirect to enhanced store
         const { addTask } = useEnhancedCalendarStore.getState()
         addTask(task)
+        
+        // Also add to local state for immediate access
+        const newTask = {
+          ...task,
+          id: `task_${Date.now()}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+        set((state) => ({
+          tasks: [...state.tasks, newTask]
+        }))
       },
       updateTask: (id, updates) => {
         // Redirect to enhanced store
         const { updateTask } = useEnhancedCalendarStore.getState()
         updateTask(id, updates)
+        
+        // Also update local state
+        set((state) => ({
+          tasks: state.tasks.map(task =>
+            task.id === id ? { ...task, ...updates, updatedAt: new Date() } : task
+          )
+        }))
       },
       deleteTask: (id) => {
         // Redirect to enhanced store
         const { deleteTask } = useEnhancedCalendarStore.getState()
         deleteTask(id)
+        
+        // Also remove from local state
+        set((state) => ({
+          tasks: state.tasks.filter(task => task.id !== id)
+        }))
       },
       getTasksByStatus: (status) => {
-        // Use enhanced store data
-        return get().tasks.filter((task) => task.status === status)
+        // Get tasks from enhanced store for consistency
+        const { tasks } = useEnhancedCalendarStore.getState()
+        return tasks.filter((task) => task.status === status)
       },
       getTasksByPriority: (priority) => {
-        // Use enhanced store data
-        return get().tasks.filter((task) => task.priority === priority)
+        // Get tasks from enhanced store for consistency
+        const { tasks } = useEnhancedCalendarStore.getState()
+        return tasks.filter((task) => task.priority === priority)
       },
     }),
     {
@@ -111,20 +136,44 @@ export const useCalendarStore = create<CalendarStore>()(
         // Redirect to enhanced store
         const { addEvent } = useEnhancedCalendarStore.getState()
         addEvent(event)
+        
+        // Also add to local state for immediate access
+        const newEvent = {
+          ...event,
+          id: `event_${Date.now()}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+        set((state) => ({
+          events: [...state.events, newEvent]
+        }))
       },
       updateEvent: (id, updates) => {
         // Redirect to enhanced store
         const { updateEvent } = useEnhancedCalendarStore.getState()
         updateEvent(id, updates)
+        
+        // Also update local state
+        set((state) => ({
+          events: state.events.map(event =>
+            event.id === id ? { ...event, ...updates, updatedAt: new Date() } : event
+          )
+        }))
       },
       deleteEvent: (id) => {
         // Redirect to enhanced store
         const { deleteEvent } = useEnhancedCalendarStore.getState()
         deleteEvent(id)
+        
+        // Also remove from local state
+        set((state) => ({
+          events: state.events.filter(event => event.id !== id)
+        }))
       },
       getEventsByDateRange: (startDate, endDate) => {
-        // Use enhanced store data
-        return get().events.filter((event) => {
+        // Get events from enhanced store for consistency
+        const { events } = useEnhancedCalendarStore.getState()
+        return events.filter((event) => {
           const eventStart = new Date(event.startTime)
           return eventStart >= startDate && eventStart <= endDate
         })

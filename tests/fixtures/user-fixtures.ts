@@ -201,23 +201,23 @@ export const userFixtures = {
       ),
       usersWithAvatars: this.validUsers.filter(user => user.avatar),
       usersWithoutAvatars: this.validUsers.filter(user => !user.avatar),
-      adminUsers: [this.adminUser],
-      testUsers: [this.testUser],
+      adminUsers: [adminUser],
+      testUsers: [testUser],
       demoUsers: [this.demoUser],
     }
   },
 
   // User relationships for testing
   userRelationships: {
-    owner: this.adminUser,
-    collaborators: this.validUsers.slice(0, 2),
-    viewers: [this.demoUser],
+    owner: null, // Will be set after initialization
+    collaborators: [], // Will be set after initialization
+    viewers: [], // Will be set after initialization
   },
 
-  // Mock authentication responses
+  // Mock authentication responses - will be initialized after export
   mockAuthResponses: {
     success: {
-      user: this.authenticatedUser,
+      user: null as any, // Will be set after initialization
       session: {
         accessToken: 'mock-token',
         expires: new Date('2024-12-31T23:59:59Z'),
@@ -238,12 +238,18 @@ export const userFixtures = {
 export type UserFixtures = typeof userFixtures
 
 // Export specific fixtures for easier imports
-export const { 
-  validUsers, 
-  adminUser, 
-  testUser, 
-  demoUser, 
+export const {
+  validUsers,
+  adminUser,
+  testUser,
+  demoUser,
   authenticatedUser,
   userSessions,
-  mockAuthResponses 
+  mockAuthResponses
 } = userFixtures
+
+// Initialize user relationships after export
+userFixtures.userRelationships.owner = userFixtures.adminUser
+userFixtures.userRelationships.collaborators = userFixtures.validUsers.slice(0, 2)
+userFixtures.userRelationships.viewers = [userFixtures.demoUser]
+userFixtures.mockAuthResponses.success.user = userFixtures.authenticatedUser

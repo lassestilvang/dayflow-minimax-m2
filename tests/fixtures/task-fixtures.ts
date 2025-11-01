@@ -404,10 +404,10 @@ export const taskFixtures = {
     },
   ],
 
-  // Mock API responses
+  // Mock API responses (will be populated after validTasks is defined)
   mockAPIResponses: {
     success: {
-      task: this.validTasks[0],
+      task: null as any, // Will be set after validTasks is available
       message: 'Task created successfully',
     },
     failure: {
@@ -420,6 +420,9 @@ export const taskFixtures = {
     },
   },
 }
+
+// Fix the mock API responses after validTasks is defined
+taskFixtures.mockAPIResponses.success.task = taskFixtures.validTasks[0]
 
 // Export type for fixture validation
 export type TaskFixtures = typeof taskFixtures

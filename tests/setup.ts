@@ -1,9 +1,9 @@
-import { vi } from 'vitest'
+import { vi, beforeEach, afterEach, expect } from 'vitest'
 import { TextEncoder, TextDecoder } from 'util'
 
 // Polyfills for Node.js environment
-global.TextEncoder = TextEncoder
-global.TextDecoder = TextDecoder
+;(global as any).TextEncoder = TextEncoder
+;(global as any).TextDecoder = TextDecoder
 
 // Mock Next.js router
 vi.mock('next/navigation', async () => {
@@ -57,26 +57,30 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+;(global as any).IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+;(global as any).ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
-// Mock WebSocket
-global.WebSocket = vi.fn(() => ({
+// Mock WebSocket with proper constructor
+;(global as any).WebSocket = vi.fn().mockImplementation(() => ({
   send: vi.fn(),
   close: vi.fn(),
   addEventListener: vi.fn(),
   removeEventListener: vi.fn(),
 }))
+;(global as any).WebSocket.CONNECTING = 0
+;(global as any).WebSocket.OPEN = 1
+;(global as any).WebSocket.CLOSING = 2
+;(global as any).WebSocket.CLOSED = 3
 
 // Mock localStorage
 const localStorageMock = {
@@ -84,8 +88,10 @@ const localStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 }
-global.localStorage = localStorageMock
+;(global as any).localStorage = localStorageMock
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -93,29 +99,55 @@ const sessionStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 }
-global.sessionStorage = sessionStorageMock
+;(global as any).sessionStorage = sessionStorageMock
 
 // Mock fetch
-global.fetch = vi.fn()
+;(global as any).fetch = vi.fn()
 
-// Mock crypto
+// Mock crypto with proper random function
 Object.defineProperty(global, 'crypto', {
   value: {
-    ...global.crypto,
     randomUUID: vi.fn(() => 'mock-uuid'),
+    getRandomValues: vi.fn((array: Uint8Array) => {
+      for (let i = 0; i < array.length; i++) {
+        array[i] = Math.floor(Math.random() * 256)
+      }
+      return array
+    }),
+    subtle: {
+      digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+    },
+  },
+  writable: true,
+  configurable: true,
+})
+
+// Mock window.crypto for E2E tests (separate from global crypto)
+Object.defineProperty(window, 'crypto', {
+  value: {
+    randomUUID: vi.fn(() => 'mock-uuid'),
+    getRandomValues: vi.fn((array: Uint8Array) => {
+      for (let i = 0; i < array.length; i++) {
+        array[i] = Math.floor(Math.random() * 256)
+      }
+      return array
+    }),
+    subtle: {
+      digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+    },
   },
   writable: true,
   configurable: true,
 })
 
 // Setup test database environment
-process.env.NODE_ENV = 'test'
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/dayflow_test'
-
-// Configure environment for testing
-process.env.TESTING = 'true'
-process.env.MOCK_SERVICES = 'true'
+;(process.env as any).NODE_ENV = 'test'
+;(process.env as any).DATABASE_URL = 'postgresql://test:test@localhost:5432/dayflow_test'
+;(process.env as any).TESTING = 'true'
+;(process.env as any).MOCK_SERVICES = 'true'
 
 // Global test setup
 beforeEach(() => {

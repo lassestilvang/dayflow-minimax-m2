@@ -10,12 +10,24 @@ import {
   eventTags,
   type Tables 
 } from './db/schema'
-import { 
-  validateTaskData, 
-  validateEventData, 
+import {
+  validateTaskData,
+  validateEventData,
   validateUserData,
   validateTaskFormData,
   validateEventFormData,
+  validateTaskInsertData,
+  validateEventInsertData,
+  validateUserInsertData,
+  validateTaskUpdateData,
+  validateEventUpdateData,
+  taskInsertSchema,
+  eventInsertSchema,
+  userInsertSchema,
+  taskUpdateSchema,
+  eventUpdateSchema,
+  taskFormDataSchema,
+  eventFormDataSchema,
   type TaskFilterValidation,
   type EventFilterValidation,
   type PaginationValidation,
@@ -165,7 +177,7 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
 // User Repository
 export class UserRepository extends BaseRepository<User, UserInsert, Partial<UserInsert>> {
   constructor() {
-    super(users, validateUserData)
+    super(users, (data) => userInsertSchema.safeParse(data), (data) => userInsertSchema.safeParse(data))
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -194,7 +206,7 @@ export class UserRepository extends BaseRepository<User, UserInsert, Partial<Use
 // Task Repository
 export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<TaskInsert>> {
   constructor() {
-    super(tasks, validateTaskData)
+    super(tasks, validateTaskUpdateData, validateTaskInsertData)
   }
 
   async findByUserId(userId: string): Promise<Task[]> {
@@ -331,7 +343,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 // Calendar Event Repository
 export class CalendarEventRepository extends BaseRepository<CalendarEvent, CalendarEventInsert, Partial<CalendarEventInsert>> {
   constructor() {
-    super(calendarEvents, validateEventData)
+    super(calendarEvents, validateEventUpdateData, validateEventInsertData)
   }
 
   async findByUserId(userId: string): Promise<CalendarEvent[]> {
