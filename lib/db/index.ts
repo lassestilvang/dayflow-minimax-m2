@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/neon-http'
 import { neon } from '@neondatabase/serverless'
 import * as schema from './schema'
+import * as integrationsSchema from './integrations-schema'
 
 // Neon database connection for serverless environment
 const connectionString = process.env.DATABASE_URL
@@ -15,7 +16,7 @@ const sql = neon(connectionString)
 // Create Drizzle instance with schema
 // @ts-ignore - Type compatibility issue between drizzle-orm and @neondatabase/serverless versions
 export const db = drizzle(sql, { 
-  schema, 
+  schema: { ...schema, ...integrationsSchema }, 
   mode: 'default',
   logger: process.env.NODE_ENV === 'development'
 })

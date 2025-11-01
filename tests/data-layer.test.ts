@@ -102,31 +102,31 @@ vi.mock('@/lib/db', async () => {
   // Mock database instance
   const mockDb = {
     insert: () => ({
-      values: (data) => ({
-        returning: async () => {
-          const newRecord = {
-            id: Date.now().toString(),
-            ...data,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-          
-          // Simulate unique constraint violations
-          if (data.email) {
-            if (mockData.users.some(u => u.email === data.email)) {
-              const error = new Error('duplicate key value violates unique constraint "users_email_unique"') as any
-              error.code = '23505'
-              throw error
-            }
-            mockData.users.push(newRecord)
-          } else if (data.title && data.status) {
-            mockData.tasks.push(newRecord)
-          } else if (data.title && data.startTime) {
-            mockData.events.push(newRecord)
-          }
-          
-          return [newRecord]
+      values: (data: any) => ({
+      returning: async () => {
+        const newRecord = {
+          id: Date.now().toString(),
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
+        
+        // Simulate unique constraint violations
+        if (data.email) {
+          if (mockData.users.some(u => u.email === data.email)) {
+            const error = new Error('duplicate key value violates unique constraint "users_email_unique"') as any
+            error.code = '23505'
+            throw error
+          }
+          mockData.users.push(newRecord)
+        } else if (data.title && data.status) {
+          mockData.tasks.push(newRecord)
+        } else if (data.title && data.startTime) {
+          mockData.events.push(newRecord)
+        }
+        
+        return [newRecord]
+      }
       })
     }),
     

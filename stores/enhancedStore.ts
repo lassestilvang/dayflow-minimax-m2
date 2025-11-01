@@ -354,7 +354,7 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
         },
 
         // Category and Tag management
-        addCategory: async (categoryData) => {
+        addCategory: async (categoryData: { name: string; color: string; icon?: string }) => {
           const { userId = 'demo-user', ...rest } = categoryData
           
           try {
@@ -365,7 +365,7 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
             }
             
             set((state) => ({
-              categories: [...state.categories, result],
+              categories: [...state.categories, result as { id: string; name: string; color: string; icon?: string; userId?: string }],
               error: null,
             }))
             
@@ -419,7 +419,7 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
             }
             
             set((state) => ({
-              tags: [...state.tags, result],
+              tags: [...state.tags, result as { id: string; name: string; color: string; userId?: string }],
               error: null,
             }))
             

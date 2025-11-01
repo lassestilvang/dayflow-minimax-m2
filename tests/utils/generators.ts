@@ -86,7 +86,8 @@ export const generatorUtils = {
       email: this.generateRandomEmail(),
       name: this.generateRandomName(),
       workosId: `workos-${this.generateRandomString(8)}`,
-      avatar: Math.random() > 0.5 ? this.generateRandomUUID() : null,
+      timezone: 'UTC',
+      preferences: {},
       createdAt: this.generateRandomDate(),
       updatedAt: this.generateRandomDate(),
     }))
@@ -108,9 +109,11 @@ export const generatorUtils = {
       progress: Math.floor(Math.random() * 101),
       dueDate: Math.random() > 0.3 ? this.generateRandomDate() : null,
       categoryId: Math.random() > 0.5 ? `category-${Math.floor(Math.random() * 5) + 1}` : null,
+      recurrence: { type: 'none' },
+      reminder: { enabled: false, minutesBefore: 0 },
       createdAt: this.generateRandomDate(),
       updatedAt: this.generateRandomDate(),
-    }))
+    })) as DatabaseTask[]
   },
 
   generateEvents(count: number = 1, userIds: string[] = ['user-1']): DatabaseCalendarEvent[] {
@@ -127,9 +130,12 @@ export const generatorUtils = {
         endTime,
         isAllDay: Math.random() > 0.8,
         location: Math.random() > 0.5 ? this.generateRandomString(10) : null,
+        attendees: [],
+        recurrence: { type: 'none' },
+        reminder: { enabled: false, minutesBefore: 0 },
         createdAt: this.generateRandomDate(),
         updatedAt: this.generateRandomDate(),
-      }
+      } as DatabaseCalendarEvent
     })
   },
 

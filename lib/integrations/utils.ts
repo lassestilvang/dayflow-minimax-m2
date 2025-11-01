@@ -106,16 +106,20 @@ export class DataTransformer {
       description: externalEvent.description,
       startTime: externalEvent.startTime,
       endTime: externalEvent.endTime,
-      isAllDay: externalEvent.isAllDay,
-      location: externalEvent.location,
+      isAllDay: externalEvent.isAllDay || false,
+      location: externalEvent.location || undefined,
       attendees: externalEvent.attendees?.map(attendee => ({
-        ...attendee,
-        status: attendee.status || 'pending'
-      })),
+        email: attendee.email,
+        name: attendee.name,
+        status: (attendee.status as 'pending' | 'accepted' | 'declined') || 'pending'
+      })) || [],
       recurrence: externalEvent.recurrence ? {
-        ...externalEvent.recurrence,
-        type: externalEvent.recurrence.type as any
-      } : undefined,
+        type: externalEvent.recurrence.type as 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly',
+        interval: externalEvent.recurrence.interval,
+        endDate: externalEvent.recurrence.endDate,
+        daysOfWeek: externalEvent.recurrence.daysOfWeek
+      } : { type: 'none' },
+      userId,
     }
 
     return event
@@ -129,13 +133,13 @@ export class DataTransformer {
       description: event.description || undefined,
       startTime: event.startTime,
       endTime: event.endTime,
-      isAllDay: event.isAllDay,
+      isAllDay: event.isAllDay || false,
       location: event.location || undefined,
-      attendees: event.attendees,
-      recurrence: event.recurrence,
-      url: event.data?.url,
+      attendees: event.attendees || [],
+      recurrence: event.recurrence || { type: 'none' },
+      url: (event as any).data?.url,
       data: {
-        ...event.data,
+        ...(event as any).data,
         dayflowId: event.id,
         userId: event.userId,
       }
@@ -480,21 +484,32 @@ export class WebhookUtils {
       .join('')
   }
 
-  static verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
+  static async verifyWebhookSignature(payload: string, signature: string, secret: string): Promise<boolean> {
     // Simple HMAC-SHA256 verification
-    const encoder = new TextEncoder()
-    const key = encoder.encode(secret)
-    const data = encoder.encode(payload)
-    
-    return crypto.subtle.sign('HMAC', key, data)
-      .then(signatureBuf => {
-        const expectedSignature = Array.from(new Uint8Array(signatureBuf))
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('')
-        
-        return signature === expectedSignature
-      })
-      .catch(() => false)
+    try {
+      const encoder = new TextEncoder()
+      const keyData = encoder.encode(secret)
+      const data = encoder.encode(payload)
+      
+      // Import secret key
+      const key = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      )
+      
+      const signatureBuf = await crypto.subtle.sign('HMAC', key, data)
+      const expectedSignature = Array.from(new Uint8Array(signatureBuf))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
+      
+      return signature === expectedSignature
+    } catch (error) {
+      console.error('Webhook signature verification error:', error)
+      return false
+    }
   }
 }
 

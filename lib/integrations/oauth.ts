@@ -3,7 +3,8 @@
  * Handles OAuth flows for all integrated services
  */
 
-import { IntegrationError, ValidationError, OAuthUtils } from './utils'
+import { OAuthUtils } from './utils'
+import { IntegrationError, ValidationError } from './base'
 
 interface OAuthConfig {
   clientId: string

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'node:events'
 import { db } from './db'
 import {
   userRepository,
@@ -33,14 +33,13 @@ export class SyncService extends EventEmitter {
     super()
     this.setupEventListeners()
   }
-
+  
   private setupEventListeners() {
     // Online/offline detection
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => {
         this.isOnline = true
         this.emit('online')
-        this.startSync()
       })
 
       window.addEventListener('offline', () => {
@@ -134,15 +133,15 @@ export class SyncService extends EventEmitter {
       syncedItems += categories.length
 
       // Sync tags
-      const tags = await tagRepository.findUserId(userId)
+      const tags = await tagRepository.findByUserId(userId)
       syncedItems += tags.length
 
       // Update local state
       useEnhancedCalendarStore.setState({
-        tasks,
-        events,
-        categories,
-        tags,
+        tasks: tasks as any,
+        events: events as any,
+        categories: categories as any,
+        tags: tags as any,
         lastSync: new Date(),
       })
 

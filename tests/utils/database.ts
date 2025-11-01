@@ -70,7 +70,8 @@ export const databaseUtils = {
       email: 'test@example.com',
       name: 'Test User',
       workosId: 'workos-123',
-      avatar: null,
+      timezone: 'UTC',
+      preferences: {},
       createdAt: new Date(),
       updatedAt: new Date(),
       ...overrides,
@@ -87,8 +88,10 @@ export const databaseUtils = {
       priority: 'high',
       status: 'pending',
       progress: 0,
-      dueDate: null as Date | undefined,
-      categoryId: null as string | undefined,
+      dueDate: undefined,
+      categoryId: undefined,
+      recurrence: { type: 'none' },
+      reminder: { enabled: false, minutesBefore: 0 },
       createdAt: new Date(),
       updatedAt: new Date(),
       ...overrides,
@@ -105,7 +108,10 @@ export const databaseUtils = {
       startTime: new Date('2024-01-01T10:00:00Z'),
       endTime: new Date('2024-01-01T11:00:00Z'),
       isAllDay: false,
-      location: null as string | undefined,
+      location: undefined,
+      attendees: [],
+      recurrence: { type: 'none' },
+      reminder: { enabled: false, minutesBefore: 0 },
       createdAt: new Date(),
       updatedAt: new Date(),
       ...overrides,
@@ -163,7 +169,7 @@ export const databaseUtils = {
 
   // Setup mock for transaction rollback
   setupTransactionRollback(mockDB: any) {
-    const mockTransaction = mockDB.transaction as vi.MockedFunction<any>
+    const mockTransaction = (mockDB.transaction as any)
     mockTransaction.mockImplementation((callback: Function) => {
       const mockTx = {
         insert: vi.fn(() => ({

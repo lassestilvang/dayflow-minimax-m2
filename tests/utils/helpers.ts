@@ -50,7 +50,7 @@ export const helperUtils = {
   },
 
   // Create a mock element
-  createMockElement(tag = 'div', properties = {}): HTMLElement {
+  createMockElement(tag = 'div', properties: any = {}): HTMLElement {
     const element = document.createElement(tag)
     
     Object.assign(element, {
@@ -67,7 +67,7 @@ export const helperUtils = {
         contains: vi.fn(() => true),
       },
       style: {
-        ...properties.style,
+        ...(properties.style || {}),
       },
       ...properties,
     })

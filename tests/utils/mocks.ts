@@ -175,7 +175,7 @@ export const mockUtils = {
     
     const setTimeoutMock = vi.fn((callback: Function, delay?: number) => {
       const id = Math.random()
-      timers.timeouts.set(id, setTimeout(callback, delay) as NodeJS.Timeout)
+      timers.timeouts.set(id, setTimeout(callback, delay) as unknown as NodeJS.Timeout)
       return id
     })
     
@@ -189,7 +189,7 @@ export const mockUtils = {
     
     const setIntervalMock = vi.fn((callback: Function, delay?: number) => {
       const id = Math.random()
-      timers.intervals.set(id, setInterval(callback, delay) as NodeJS.Timeout)
+      timers.intervals.set(id, setInterval(callback, delay) as unknown as NodeJS.Timeout)
       return id
     })
     
@@ -338,12 +338,20 @@ export const mockUtils = {
   setupMockEnvironment() {
     // Replace global mocks
     global.fetch = this.mockFetch({})
-    global.localStorage = this.mockLocalStorage()
-    global.sessionStorage = this.mockSessionStorage()
-    global.WebSocket = vi.fn(() => this.mockWebSocket())
-    global.IntersectionObserver = vi.fn(() => this.mockIntersectionObserver())
-    global.ResizeObserver = vi.fn(() => this.mockResizeObserver())
-    global.crypto = this.mockCrypto()
+    global.localStorage = this.mockLocalStorage() as any
+    global.sessionStorage = this.mockSessionStorage() as any
+    global.WebSocket = vi.fn(() => this.mockWebSocket()) as any
+    global.IntersectionObserver = vi.fn(() => this.mockIntersectionObserver()) as any
+    global.ResizeObserver = vi.fn(() => this.mockResizeObserver()) as any
+    global.crypto = Object.assign(this.mockCrypto(), {
+      subtle: {
+        digest: vi.fn(),
+        sign: vi.fn(),
+        verify: vi.fn(),
+        encrypt: vi.fn(),
+        decrypt: vi.fn(),
+      }
+    }) as any
     global.setTimeout = vi.fn((callback: TimerHandler) => callback) as any
     global.clearTimeout = vi.fn()
     global.setInterval = vi.fn((callback: TimerHandler) => callback) as any
@@ -365,22 +373,19 @@ export const mockUtils = {
         writable: true,
         configurable: true,
       })
-    }
-    
-    if ('Notification' in global) {
-      global.Notification = Object.assign(this.mockNotification(), { prototype: {} })
-    }
-    
-    if ('BroadcastChannel' in global) {
-      global.BroadcastChannel = Object.assign(this.mockBroadcastChannel(), { prototype: {} })
-    }
-    
-    if ('serviceWorker' in global.navigator) {
       Object.defineProperty(global.navigator, 'serviceWorker', {
         value: this.mockServiceWorker(),
         writable: true,
         configurable: true,
       })
+    }
+    
+    if ('Notification' in global) {
+      global.Notification = vi.fn() as any
+    }
+    
+    if ('BroadcastChannel' in global) {
+      global.BroadcastChannel = vi.fn() as any
     }
   },
 }

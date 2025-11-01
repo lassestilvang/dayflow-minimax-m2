@@ -3,7 +3,8 @@
  * Manages webhook endpoints and processing for all integration services
  */
 
-import { IntegrationError, ValidationError, WebhookUtils, RetryHandler } from './utils'
+import { WebhookUtils, RetryHandler } from './utils'
+import { IntegrationError, ValidationError } from './base'
 import { UserIntegration, IntegrationAuditLog } from '../db/integrations-schema'
 import { db } from '../db'
 import { and, eq, inArray } from 'drizzle-orm'

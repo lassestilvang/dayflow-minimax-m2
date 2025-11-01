@@ -3,48 +3,22 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 
 // Import enhanced store and types
 import { useEnhancedCalendarStore } from './enhancedStore'
-
-// Legacy interfaces for backward compatibility
-export interface Task {
-  id: string
-  title: string
-  description?: string
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  dueDate?: Date
-  completedAt?: Date
-  userId: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface CalendarEvent {
-  id: string
-  title: string
-  description?: string
-  startTime: Date
-  endTime: Date
-  isAllDay: boolean
-  location?: string
-  userId: string
-  createdAt: Date
-  updatedAt: Date
-}
+import type { Task, CalendarEvent } from '@/types/calendar'
 
 interface TaskStore {
   tasks: Task[]
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void
-  updateTask: (id: string, updates: Partial<Task>) => void
-  deleteTask: (id: string) => void
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>
+  updateTask: (id: string, updates: Partial<Task>) => Promise<boolean>
+  deleteTask: (id: string) => Promise<boolean>
   getTasksByStatus: (status: Task['status']) => Task[]
   getTasksByPriority: (priority: Task['priority']) => Task[]
 }
 
 interface CalendarStore {
   events: CalendarEvent[]
-  addEvent: (event: Omit<CalendarEvent, 'id' | 'createdAt' | 'updatedAt'>) => void
-  updateEvent: (id: string, updates: Partial<CalendarEvent>) => void
-  deleteEvent: (id: string) => void
+  addEvent: (event: Omit<CalendarEvent, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>
+  updateEvent: (id: string, updates: Partial<CalendarEvent>) => Promise<boolean>
+  deleteEvent: (id: string) => Promise<boolean>
   getEventsByDateRange: (startDate: Date, endDate: Date) => CalendarEvent[]
 }
 
@@ -60,10 +34,10 @@ export const useTaskStore = create<TaskStore>()(
   persist(
     (set, get) => ({
       tasks: [],
-      addTask: (task) => {
+      addTask: async (task) => {
         // Redirect to enhanced store
         const { addTask } = useEnhancedCalendarStore.getState()
-        addTask(task)
+        return await addTask(task)
         
         // Also add to local state for immediate access
         const newTask = {
@@ -76,10 +50,10 @@ export const useTaskStore = create<TaskStore>()(
           tasks: [...state.tasks, newTask]
         }))
       },
-      updateTask: (id, updates) => {
+      updateTask: async (id, updates) => {
         // Redirect to enhanced store
         const { updateTask } = useEnhancedCalendarStore.getState()
-        updateTask(id, updates)
+        return await updateTask(id, updates)
         
         // Also update local state
         set((state) => ({
@@ -88,10 +62,10 @@ export const useTaskStore = create<TaskStore>()(
           )
         }))
       },
-      deleteTask: (id) => {
+      deleteTask: async (id) => {
         // Redirect to enhanced store
         const { deleteTask } = useEnhancedCalendarStore.getState()
-        deleteTask(id)
+        return await deleteTask(id)
         
         // Also remove from local state
         set((state) => ({
@@ -132,10 +106,10 @@ export const useCalendarStore = create<CalendarStore>()(
   persist(
     (set, get) => ({
       events: [],
-      addEvent: (event) => {
+      addEvent: async (event) => {
         // Redirect to enhanced store
         const { addEvent } = useEnhancedCalendarStore.getState()
-        addEvent(event)
+        return await addEvent(event)
         
         // Also add to local state for immediate access
         const newEvent = {
@@ -148,10 +122,10 @@ export const useCalendarStore = create<CalendarStore>()(
           events: [...state.events, newEvent]
         }))
       },
-      updateEvent: (id, updates) => {
+      updateEvent: async (id, updates) => {
         // Redirect to enhanced store
         const { updateEvent } = useEnhancedCalendarStore.getState()
-        updateEvent(id, updates)
+        return await updateEvent(id, updates)
         
         // Also update local state
         set((state) => ({
@@ -160,10 +134,10 @@ export const useCalendarStore = create<CalendarStore>()(
           )
         }))
       },
-      deleteEvent: (id) => {
+      deleteEvent: async (id) => {
         // Redirect to enhanced store
         const { deleteEvent } = useEnhancedCalendarStore.getState()
-        deleteEvent(id)
+        return await deleteEvent(id)
         
         // Also remove from local state
         set((state) => ({
