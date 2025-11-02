@@ -423,7 +423,7 @@ export const userFormSchema = z.object({
   image: z.string().url().optional(),
   workosId: z.string().optional(),
   timezone: z.string().optional(),
-  preferences: z.record(z.any()).optional(),
+  preferences: z.record(z.any(), z.any()).optional(),
 })
 
 export const taskFormSchema = z.object({

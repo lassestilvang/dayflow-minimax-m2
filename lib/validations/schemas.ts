@@ -3,9 +3,8 @@ import { z } from 'zod'
 // Base schemas
 export const idSchema = z.string().uuid('Invalid ID format')
 
-export const timestampSchema = z.date({
-  required_error: 'Date is required',
-  invalid_type_error: 'Invalid date format',
+export const timestampSchema = z.date().refine((date) => date instanceof Date, {
+  message: 'Date is required',
 })
 
 export const optionalTimestampSchema = z.date().nullable().optional()

@@ -241,7 +241,7 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
             
             const validation = validateEventFormData(eventToValidate)
             if (!validation.success) {
-              set({ error: validation.error?.errors?.[0]?.message || 'Invalid event data' })
+              set({ error: validation.error?.message || 'Invalid event data' })
               return false
             }
 
