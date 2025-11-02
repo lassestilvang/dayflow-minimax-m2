@@ -35,8 +35,10 @@ import type {
   EventFormData,
 } from '@/types/database'
 
-// COMPREHENSIVE DATABASE MOCK - completely bypasses all database operations
-vi.mock('@/lib/db', async () => {
+// DIRECT REPOSITORY MOCKING - bypass complex Drizzle query building
+vi.mock('@/lib/data-access', async () => {
+  const actual = await import('@/lib/data-access')
+  
   // Mock data storage
   const mockData = {
     users: [
@@ -46,8 +48,8 @@ vi.mock('@/lib/db', async () => {
         name: 'Test User',
         workosId: 'workos-123',
         preferences: {},
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date('2024-01-01T00:00:00Z'),
+        updatedAt: new Date('2024-01-01T00:00:00Z')
       }
     ],
     tasks: [
@@ -60,8 +62,8 @@ vi.mock('@/lib/db', async () => {
         progress: 0,
         dueDate: new Date(Date.now() - 86400000), // Yesterday - overdue
         userId: '550e8400-e29b-41d4-a716-446655440000',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date('2024-01-01T00:00:00Z'),
+        updatedAt: new Date('2024-01-01T00:00:00Z')
       }
     ],
     events: [
@@ -74,210 +76,165 @@ vi.mock('@/lib/db', async () => {
         isAllDay: false,
         location: null,
         userId: '550e8400-e29b-41d4-a716-446655440000',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date('2024-01-01T00:00:00Z'),
+        updatedAt: new Date('2024-01-01T00:00:00Z')
       }
     ]
   }
 
-  // Mock Drizzle ORM functions
-  const mockEq = (column: any, value: any) => ({ type: 'eq', column, value })
-  const mockLte = (column: any, value: any) => ({ type: 'lte', column, value })
-  const mockGte = (column: any, value: any) => ({ type: 'gte', column, value })
-  const mockAnd = (...conditions: any[]) => ({ type: 'and', conditions })
-  const mockBetween = (column: any, start: any, end: any) => ({ type: 'between', column, start, end })
-  const mockIlike = (column: any, pattern: any) => ({ type: 'ilike', column, pattern })
-  const mockDesc = (column: any) => ({ type: 'desc', column })
-  const mockAsc = (column: any) => ({ type: 'asc', column })
+  // Create mock repository implementations
+  const mockUserRepository = {
+    async findByEmail(email: string) {
+      return mockData.users.find(u => u.email === email) || null
+    },
+    async findById(id: string) {
+      return mockData.users.find(u => u.id === id) || null
+    },
+    async create(data: any) {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (data.email && !emailRegex.test(data.email)) {
+        throw new ValidationError('Invalid email format')
+      }
+      
+      // Check unique constraint
+      if (data.email && mockData.users.some(u => u.email === data.email)) {
+        const error = new Error('duplicate key value violates unique constraint "users_email_unique"') as any
+        error.code = '23505'
+        throw error
+      }
+      const newUser = {
+        id: Date.now().toString(),
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      mockData.users.push(newUser)
+      return newUser
+    },
+    async update(id: string, data: any) {
+      const user = mockData.users.find(u => u.id === id)
+      if (!user) throw new NotFoundError('Record', id)
+      Object.assign(user, { ...data, updatedAt: new Date() })
+      return user
+    },
+    async delete(id: string) {
+      const index = mockData.users.findIndex(u => u.id === id)
+      if (index === -1) throw new NotFoundError('Record', id)
+      mockData.users.splice(index, 1)
+    },
+    async bulkUpdate(data: any) {
+      // Mock implementation
+      return []
+    }
+  }
 
-  // Mock table objects
-  const users = { id: 'users', email: 'users-email', workosId: 'users-workosId', name: 'users-name', preferences: 'users-preferences' }
-  const tasks = { id: 'tasks', userId: 'tasks-userId', title: 'tasks-title', description: 'tasks-description', status: 'tasks-status', priority: 'tasks-priority', progress: 'tasks-progress', dueDate: 'tasks-dueDate', categoryId: 'tasks-categoryId' }
-  const calendarEvents = { id: 'events', userId: 'events-userId', title: 'events-title', description: 'events-description', startTime: 'events-startTime', endTime: 'events-endTime', isAllDay: 'events-isAllDay', location: 'events-location' }
-  const categories = { id: 'categories', userId: 'categories-userId', name: 'categories-name', color: 'categories-color', icon: 'categories-icon' }
-  const tags = { id: 'tags', userId: 'tags-userId', name: 'tags-name', color: 'tags-color' }
-  const taskTags = { taskId: 'taskTags-taskId', tagId: 'taskTags-tagId' }
-  const eventTags = { eventId: 'eventTags-eventId', tagId: 'eventTags-tagId' }
+  const mockTaskRepository = {
+    async findById(id: string) {
+      return mockData.tasks.find(t => t.id === id) || null
+    },
+    async create(data: any) {
+      // Validate task data
+      if (!data.title || data.title.trim() === '') {
+        throw new ValidationError('Task title is required')
+      }
+      if (data.priority && !['low', 'medium', 'high'].includes(data.priority)) {
+        throw new ValidationError('Invalid priority value')
+      }
+      
+      const newTask = {
+        id: Date.now().toString(),
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      mockData.tasks.push(newTask)
+      return newTask
+    },
+    async update(id: string, data: any) {
+      const task = mockData.tasks.find(t => t.id === id)
+      if (!task) throw new NotFoundError('Record', id)
+      Object.assign(task, { ...data, updatedAt: new Date() })
+      return task
+    },
+    async delete(id: string) {
+      const index = mockData.tasks.findIndex(t => t.id === id)
+      if (index === -1) throw new NotFoundError('Record', id)
+      mockData.tasks.splice(index, 1)
+    },
+    async findOverdue(userId: string) {
+      const now = new Date()
+      return mockData.tasks.filter(t =>
+        t.userId === userId &&
+        t.status === 'pending' &&
+        t.dueDate <= now
+      )
+    },
+    async bulkUpdate(data: any) {
+      // Mock bulk update - update tasks with given IDs
+      const updatedTasks = []
+      for (const id of data.ids) {
+        const task = mockData.tasks.find(t => t.id === id)
+        if (task) {
+          Object.assign(task, { ...data.updates, updatedAt: new Date() })
+          updatedTasks.push(task)
+        }
+      }
+      return updatedTasks
+    },
+    async findWithFilters(userId: string, filters: any) {
+      return mockData.tasks.filter(t => t.userId === userId)
+    }
+  }
 
-  // Mock database instance
-  const mockDb = {
-    insert: () => ({
-      values: (data: any) => ({
-      returning: async () => {
-        const newRecord = {
-          id: Date.now().toString(),
-          ...data,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-        
-        // Simulate unique constraint violations
-        if (data.email) {
-          if (mockData.users.some(u => u.email === data.email)) {
-            const error = new Error('duplicate key value violates unique constraint "users_email_unique"') as any
-            error.code = '23505'
-            throw error
-          }
-          mockData.users.push(newRecord)
-        } else if (data.title && data.status) {
-          mockData.tasks.push(newRecord)
-        } else if (data.title && data.startTime) {
-          mockData.events.push(newRecord)
-        }
-        
-        return [newRecord]
+  const mockCalendarEventRepository = {
+    async findById(id: string) {
+      return mockData.events.find(e => e.id === id) || null
+    },
+    async create(data: any) {
+      const newEvent = {
+        id: Date.now().toString(),
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
-      })
-    }),
-    
-    select: () => ({
-      from: (table: any) => {
-        let data: any[] = []
-        if (table === users) data = mockData.users
-        else if (table === tasks) data = mockData.tasks
-        else if (table === calendarEvents) data = mockData.events
-        
-        return {
-          where: (condition: any) => {
-            let filtered = [...data]
-            
-            // Simple condition filtering
-            if (condition?.type === 'eq') {
-              filtered = filtered.filter(item => item[condition.column.name] === condition.value)
-            } else if (condition?.type === 'and' && condition.conditions) {
-              filtered = filtered.filter(item => {
-                return condition.conditions.every((cond: any) => {
-                  if (cond.type === 'eq') {
-                    return item[cond.column.name] === cond.value
-                  }
-                  if (cond.type === 'lte') {
-                    const val = item[cond.column.name]
-                    return val && new Date(val) <= new Date(cond.value)
-                  }
-                  if (cond.type === 'gte') {
-                    const val = item[cond.column.name]
-                    return val && new Date(val) >= new Date(cond.value)
-                  }
-                  return true
-                })
-              })
-            }
-            
-            return {
-              limit: (count: number) => Promise.resolve(count ? filtered.slice(0, count) : filtered),
-              orderBy: () => ({
-                limit: (count: number) => ({
-                  offset: () => Promise.resolve(filtered.slice(0, count))
-                })
-              }),
-              returning: () => Promise.resolve(filtered)
-            }
-          },
-          leftJoin: () => ({
-            leftJoin: () => ({
-              where: () => Promise.resolve([{ event: data[0] || {}, tags: [] }])
-            })
-          }),
-          orderBy: () => ({
-            limit: (count: number) => ({
-              offset: () => Promise.resolve(data.slice(0, count))
-            })
-          }),
-          limit: (count: number) => Promise.resolve(count ? data.slice(0, count) : data)
-        }
-      }
-    }),
-    
-    update: () => ({
-      set: (data: any) => ({
-        where: (condition: any) => ({
-          returning: async () => {
-            let found = null
-            
-            // Search in all tables
-            for (const tableData of [mockData.users, mockData.tasks, mockData.events]) {
-              const record = tableData.find(r => r.id === condition.value)
-              if (record) {
-                found = record
-                Object.assign(record, { ...data, updatedAt: new Date() })
-                break
-              }
-            }
-            
-            return found ? [found] : []
-          }
-        })
-      })
-    }),
-    
-    delete: () => ({
-      where: (condition: any) => ({
-        returning: async () => {
-          let found = null
-          
-          // Search in all tables
-          for (const tableData of [mockData.users, mockData.tasks, mockData.events]) {
-            const index = tableData.findIndex(r => r.id === condition.value)
-            if (index !== -1) {
-              found = tableData[index]
-              tableData.splice(index, 1)
-              break
-            }
-          }
-          
-          return found ? [found] : []
-        }
-      })
-    }),
-    
-    transaction: async (callback: (tx: any) => Promise<any>) => {
-      const tx = {
-        update: () => ({
-          set: () => ({
-            where: () => ({
-              returning: async () => [{ id: '1', updatedAt: new Date() }]
-            })
-          })
-        })
-      }
-      return await callback(tx)
+      mockData.events.push(newEvent)
+      return newEvent
+    },
+    async update(id: string, data: any) {
+      const event = mockData.events.find(e => e.id === id)
+      if (!event) throw new NotFoundError('Record', id)
+      Object.assign(event, { ...data, updatedAt: new Date() })
+      return event
+    },
+    async delete(id: string) {
+      const index = mockData.events.findIndex(e => e.id === id)
+      if (index === -1) throw new NotFoundError('Record', id)
+      mockData.events.splice(index, 1)
+    },
+    async findConflicts(userId: string, startTime: Date, endTime: Date, excludeId?: string) {
+      return mockData.events.filter(e =>
+        e.userId === userId &&
+        (!excludeId || e.id !== excludeId) &&
+        e.startTime < endTime &&
+        e.endTime > startTime
+      )
+    },
+    async bulkUpdate(data: any) {
+      // Mock implementation
+      return []
+    },
+    async getWithTags(id: string) {
+      const event = mockData.events.find(e => e.id === id)
+      return event ? { ...event, tags: [] } : null
     }
   }
 
   return {
-    db: mockDb,
-    getDatabase: () => mockDb,
-    getSQL: () => ({ query: () => ({ text: 'SELECT 1' }) }),
-    users,
-    tasks,
-    calendarEvents,
-    categories,
-    tags,
-    taskTags,
-    eventTags,
-    // Mock Drizzle functions
-    eq: mockEq,
-    lte: mockLte,
-    gte: mockGte,
-    and: mockAnd,
-    between: mockBetween,
-    ilike: mockIlike,
-    desc: mockDesc,
-    asc: mockAsc,
-    sql: (strings: TemplateStringsArray, ...values: any[]) => ({ type: 'sql', strings, values }),
-    // Mock types
-    type: {
-      User: {},
-      UserInsert: {},
-      Task: {},
-      TaskInsert: {},
-      CalendarEvent: {},
-      CalendarEventInsert: {},
-      Tables: {}
-    },
-    // Schema exports
-    schema: {},
-    checkDatabaseConnection: async () => ({ connected: true })
+    ...actual,
+    userRepository: mockUserRepository,
+    taskRepository: mockTaskRepository,
+    calendarEventRepository: mockCalendarEventRepository,
   }
 })
 
