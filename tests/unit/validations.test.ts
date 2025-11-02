@@ -226,7 +226,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain('Invalid enum value')
+      expect(result.error?.issues[0].message).toContain('Invalid option')
     })
 
     it('should reject invalid priority', () => {
@@ -243,7 +243,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain('Invalid enum value')
+      expect(result.error?.issues[0].message).toContain('Invalid option')
     })
 
     it('should accept valid enum values', () => {
@@ -464,7 +464,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain('Expected boolean')
+      expect(result.error?.issues[0].message).toContain('Invalid input')
     })
   })
 

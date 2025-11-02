@@ -246,6 +246,8 @@ vi.mock('@/lib/db', async () => {
 
   return {
     db: mockDb,
+    getDatabase: () => mockDb,
+    getSQL: () => ({ query: () => ({ text: 'SELECT 1' }) }),
     users,
     tasks,
     calendarEvents,
@@ -274,93 +276,14 @@ vi.mock('@/lib/db', async () => {
       Tables: {}
     },
     // Schema exports
-    schema: {}
+    schema: {},
+    checkDatabaseConnection: async () => ({ connected: true })
   }
 })
 
 describe('Data Access Layer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
-    // Override repository methods to use mock data
-    vi.spyOn(userRepository, 'findByEmail').mockImplementation((email: string) => {
-      if (email === 'test@example.com') {
-        return Promise.resolve({
-          id: '1',
-          email: 'test@example.com',
-          name: 'Test User',
-          workosId: 'workos-123',
-          preferences: {},
-          createdAt: new Date(),
-          updatedAt: new Date()
-        } as any)
-      }
-      return Promise.resolve(null)
-    })
-
-    vi.spyOn(taskRepository, 'update').mockImplementation((id: string, data: any) => {
-      if (id === '1') {
-        return Promise.resolve({
-          id: '1',
-          title: data.title || 'Updated Task',
-          status: data.status || 'completed',
-          description: 'Test Description',
-          priority: 'high',
-          progress: data.progress || 0,
-          dueDate: new Date(),
-          userId: '550e8400-e29b-41d4-a716-446655440000',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        } as any)
-      }
-      throw new NotFoundError('Record', id)
-    })
-
-    vi.spyOn(taskRepository, 'findOverdue').mockImplementation((userId: string) => {
-      return Promise.resolve([{
-        id: '1',
-        title: 'Overdue Task',
-        description: 'Test Description',
-        status: 'pending',
-        priority: 'high',
-        progress: 0,
-        dueDate: new Date(Date.now() - 86400000),
-        userId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }] as any)
-    })
-
-    vi.spyOn(calendarEventRepository, 'findConflicts').mockImplementation((userId: string, startTime: Date, endTime: Date, excludeId?: string) => {
-      return Promise.resolve([{
-        id: '1',
-        title: 'Conflicting Event',
-        description: 'Test Description',
-        startTime: new Date('2024-01-01T10:00:00Z'),
-        endTime: new Date('2024-01-01T11:00:00Z'),
-        isAllDay: false,
-        location: null,
-        userId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }] as any)
-    })
-
-    vi.spyOn(calendarEventRepository, 'getWithTags').mockImplementation((eventId: string) => {
-      return Promise.resolve({
-        id: '1',
-        title: 'Test Event',
-        description: 'Test Description',
-        startTime: new Date('2024-01-01T10:00:00Z'),
-        endTime: new Date('2024-01-01T11:00:00Z'),
-        isAllDay: false,
-        location: null,
-        userId: '550e8400-e29b-41d4-a716-446655440000',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        tags: []
-      } as any)
-    })
   })
 
   describe('UserRepository', () => {
@@ -740,41 +663,6 @@ describe('Migration Manager', () => {
 describe('Integration Tests', () => {
   describe('Complete Task Workflow', () => {
     it('should handle complete task lifecycle', async () => {
-      // Mock create to return a specific task
-      vi.spyOn(taskRepository, 'create').mockImplementation(async (data: any) => ({
-        id: 'integration-task-1',
-        ...data,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      } as any))
-
-      // Mock update to handle the created task
-      const originalUpdate = taskRepository.update
-      vi.spyOn(taskRepository, 'update').mockImplementation(async (id: string, data: any) => {
-        if (id === 'integration-task-1') {
-          return {
-            id,
-            ...data,
-            description: 'Testing complete workflow',
-            progress: 100,
-            dueDate: new Date(),
-            userId: '550e8400-e29b-41d4-a716-446655440000',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          } as any
-        }
-        throw new NotFoundError('Record', id)
-      })
-
-      // Mock delete to handle the created task
-      const originalDelete = taskRepository.delete
-      vi.spyOn(taskRepository, 'delete').mockImplementation(async (id: string) => {
-        if (id === 'integration-task-1') {
-          return {} as any
-        }
-        throw new NotFoundError('Record', id)
-      })
-
       const taskData = {
         title: 'Integration Test Task',
         description: 'Testing complete workflow',
@@ -805,40 +693,6 @@ describe('Integration Tests', () => {
 
   describe('Complete Event Workflow', () => {
     it('should handle complete event lifecycle', async () => {
-      // Mock create to return a specific event
-      vi.spyOn(calendarEventRepository, 'create').mockImplementation(async (data: any) => ({
-        id: 'integration-event-1',
-        ...data,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      } as any))
-
-      // Mock update to handle the created event
-      vi.spyOn(calendarEventRepository, 'update').mockImplementation(async (id: string, data: any) => {
-        if (id === 'integration-event-1') {
-          return {
-            id,
-            ...data,
-            description: 'Testing complete workflow',
-            isAllDay: false,
-            startTime: new Date('2024-01-01T10:00:00Z'),
-            endTime: new Date('2024-01-01T11:00:00Z'),
-            userId: '550e8400-e29b-41d4-a716-446655440000',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          } as any
-        }
-        throw new NotFoundError('Record', id)
-      })
-
-      // Mock delete to handle the created event
-      vi.spyOn(calendarEventRepository, 'delete').mockImplementation(async (id: string) => {
-        if (id === 'integration-event-1') {
-          return {} as any
-        }
-        throw new NotFoundError('Record', id)
-      })
-
       const eventData = {
         title: 'Integration Test Event',
         description: 'Testing complete workflow',
@@ -860,23 +714,6 @@ describe('Integration Tests', () => {
       const updatedEvent = await calendarEventRepository.update(createdEvent.id, updates)
       expect(updatedEvent.title).toBe(updates.title)
       expect(updatedEvent.location).toBe(updates.location)
-
-      // Mock findConflicts specifically for this test - return conflicts array
-      vi.spyOn(calendarEventRepository, 'findConflicts').mockImplementation(async (userId: string, startTime: Date, endTime: Date, excludeId?: string) => {
-        // Always return an array of conflicts for this test
-        return [{
-          id: 'conflict-1',
-          title: 'Conflicting Event',
-          description: 'Test Description',
-          startTime: new Date('2024-01-01T10:30:00Z'),
-          endTime: new Date('2024-01-01T11:30:00Z'),
-          isAllDay: false,
-          location: null,
-          userId,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }] as any
-      })
 
       const conflicts = await calendarEventRepository.findConflicts(
         '550e8400-e29b-41d4-a716-446655440000',
