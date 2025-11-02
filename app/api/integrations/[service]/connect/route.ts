@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-interface Params {
-  params: {
-    service: string
-  }
-}
-
 function getUserId(request: NextRequest): string | null {
   return request.headers.get('x-user-id')
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ service: string }> }
 ) {
+  const { service } = await context.params
   try {
     const userId = getUserId(request)
     
@@ -26,7 +21,7 @@ export async function POST(
 
     // Validate service parameter
     const validServices = ['google-calendar', 'outlook', 'apple-calendar', 'todoist', 'clickup']
-    if (!validServices.includes(params.service)) {
+    if (!validServices.includes(service)) {
       return NextResponse.json(
         { error: 'Invalid service parameter' },
         { status: 400 }
@@ -37,7 +32,7 @@ export async function POST(
     const { redirectUri, scopes } = body
 
     // Simulate OAuth flow initiation
-    const authUrl = `https://auth.${params.service}.com/oauth/authorize?` +
+    const authUrl = `https://auth.${service}.com/oauth/authorize?` +
       `client_id=mock-client-id&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `scope=${encodeURIComponent(scopes?.join(' ') || '')}&` +
@@ -46,7 +41,7 @@ export async function POST(
 
     return NextResponse.json({
       authUrl,
-      service: params.service,
+      service,
       message: 'OAuth flow initiated successfully'
     }, { status: 200 })
   } catch (error) {

@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { userRepository } from '@/lib/data-access'
 
-interface Params {
-  params: {
-    id: string
-  }
-}
-
 export async function GET(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params
   try {
-    const user = await userRepository.findById(params.id)
+    const user = await userRepository.findById(id)
     
     if (!user) {
       return NextResponse.json(
@@ -33,11 +28,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params
   try {
     const body = await request.json()
-    const user = await userRepository.update(params.id, body)
+    const user = await userRepository.update(id, body)
     
     return NextResponse.json(user, { status: 200 })
   } catch (error) {
@@ -51,10 +47,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params
   try {
-    const user = await userRepository.delete(params.id)
+    const user = await userRepository.delete(id)
     return NextResponse.json(user, { status: 200 })
   } catch (error) {
     console.error('Error deleting user:', error)

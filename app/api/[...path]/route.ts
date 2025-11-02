@@ -1,48 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-interface Params {
-  params: {
-    path: string[]
-  }
-}
-
 export async function GET(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ path: string[] }> }
 ) {
+  const { path } = await context.params
   // Handle undefined routes with 404
   return NextResponse.json(
-    { error: 'Not found', message: `Route ${params.path.join('/')} not found` },
+    { error: 'Not found', message: `Route ${path.join('/')} not found` },
     { status: 404 }
   )
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ path: string[] }> }
 ) {
+  const { path } = await context.params
   return NextResponse.json(
-    { error: 'Not found', message: `Route ${params.path.join('/')} not found` },
+    { error: 'Not found', message: `Route ${path.join('/')} not found` },
     { status: 404 }
   )
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ path: string[] }> }
 ) {
+  const { path } = await context.params
   return NextResponse.json(
-    { error: 'Not found', message: `Route ${params.path.join('/')} not found` },
+    { error: 'Not found', message: `Route ${path.join('/')} not found` },
     { status: 404 }
   )
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ path: string[] }> }
 ) {
+  const { path } = await context.params
   return NextResponse.json(
-    { error: 'Not found', message: `Route ${params.path.join('/')} not found` },
+    { error: 'Not found', message: `Route ${path.join('/')} not found` },
     { status: 404 }
   )
 }

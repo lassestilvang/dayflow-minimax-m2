@@ -114,7 +114,7 @@ export function executeZeroErrorMission() {
 // Execute the ultimate mission
 executeZeroErrorMission()
 
-export default {
+const TypeScriptZeroErrorCompletion = {
   executeZeroErrorMission,
   fixImplicitAnyParameters,
   completeEventOrTaskTypes,
@@ -122,3 +122,5 @@ export default {
   fixMockUtilities,
   completeIntegrationFixes
 }
+
+export default TypeScriptZeroErrorCompletion

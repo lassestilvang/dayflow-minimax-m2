@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { taskRepository } from '@/lib/data-access'
 
-interface Params {
-  params: {
-    id: string
-  }
-}
-
 function getUserId(request: NextRequest): string | null {
   return request.headers.get('x-user-id')
 }
 
 export async function GET(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params
   try {
-    const task = await taskRepository.findById(params.id)
+    const task = await taskRepository.findById(id)
     
     if (!task) {
       return NextResponse.json(
@@ -37,8 +32,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params
   try {
     const userId = getUserId(request)
     
@@ -50,7 +46,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const task = await taskRepository.update(params.id, body)
+    const task = await taskRepository.update(id, body)
     
     if (!task) {
       return NextResponse.json(
@@ -71,8 +67,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: Params
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params
   try {
     const userId = getUserId(request)
     
@@ -83,7 +80,7 @@ export async function DELETE(
       )
     }
 
-    await taskRepository.delete(params.id)
+    await taskRepository.delete(id)
     
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
