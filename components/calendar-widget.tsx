@@ -6,7 +6,7 @@ import { Plus } from "lucide-react"
 
 export function CalendarWidget() {
   return (
-    <Card>
+    <Card data-testid="calendar-widget">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Calendar</CardTitle>
         <Plus className="h-4 w-4" />

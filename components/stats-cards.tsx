@@ -5,7 +5,7 @@ import { CheckSquare, Clock, Calendar, TrendingUp } from "lucide-react"
 
 export function StatsCards() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-testid="stats-cards">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>

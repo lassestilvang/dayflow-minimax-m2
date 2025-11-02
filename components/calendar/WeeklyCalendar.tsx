@@ -126,6 +126,7 @@ const EventFormDialog: React.FC<EventFormDialogProps> = ({
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
+              name="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="Event title"
@@ -137,6 +138,7 @@ const EventFormDialog: React.FC<EventFormDialogProps> = ({
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
+              name="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Event description"
@@ -201,7 +203,7 @@ const EventFormDialog: React.FC<EventFormDialogProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={formData.categoryId} onValueChange={(value: any) => setFormData({ ...formData, categoryId: value })}>
+              <Select value={formData.categoryId} onValueChange={(value: any) => setFormData({ ...formData, categoryId: value })} name="status">
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -216,7 +218,7 @@ const EventFormDialog: React.FC<EventFormDialogProps> = ({
             {!formData.isAllDay && (
               <div className="space-y-2">
                 <Label htmlFor="priority">Priority</Label>
-                <Select value={formData.priority} onValueChange={(value: any) => setFormData({ ...formData, priority: value })}>
+                <Select value={formData.priority} onValueChange={(value: any) => setFormData({ ...formData, priority: value })} name="priority">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -393,7 +395,7 @@ export const WeeklyCalendar: React.FC = () => {
   }, [allEvents])
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background" data-testid="week-display">
       {/* Week Navigation */}
       <WeekNavigation
         currentWeek={currentWeek}
@@ -429,34 +431,36 @@ export const WeeklyCalendar: React.FC = () => {
       </AnimatePresence>
 
       {/* Calendar Grid with DnD Context */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="flex-1 overflow-hidden">
-          <CalendarGrid
-            currentWeek={currentWeek}
-            events={allEvents}
-            viewSettings={viewSettings}
-            onTimeSlotClick={handleTimeSlotClick}
-          />
+      <div data-testid="calendar-widget">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex-1 overflow-hidden">
+            <CalendarGrid
+              currentWeek={currentWeek}
+              events={allEvents}
+              viewSettings={viewSettings}
+              onTimeSlotClick={handleTimeSlotClick}
+            />
 
-          {/* Drag Overlay */}
-          <DragOverlay>
-            {activeId && dragEvent ? (
-              <CalendarEvent
-                event={dragEvent}
-                draggable={false}
-                overlay={true}
-                className="shadow-xl"
-              />
-            ) : null}
-          </DragOverlay>
-        </div>
-      </DndContext>
+            {/* Drag Overlay */}
+            <DragOverlay>
+              {activeId && dragEvent ? (
+                <CalendarEvent
+                  event={dragEvent}
+                  draggable={false}
+                  overlay={true}
+                  className="shadow-xl"
+                />
+              ) : null}
+            </DragOverlay>
+          </div>
+        </DndContext>
+      </div>
 
       {/* Event Form Dialog */}
       <EventFormDialog

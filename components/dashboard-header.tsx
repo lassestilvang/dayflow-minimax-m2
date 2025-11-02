@@ -5,7 +5,7 @@ import { Bell, User } from "lucide-react"
 
 export function DashboardHeader() {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between" data-testid="dashboard-header">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">Welcome back to DayFlow</p>
