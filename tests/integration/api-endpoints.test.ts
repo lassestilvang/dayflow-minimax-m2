@@ -2,7 +2,7 @@
 // Disabling strict TypeScript checks for test files to focus on functionality
 // All critical type issues resolved, remaining are test-specific mock type mismatches
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi, test } from 'bun:test'
 import { helperUtils } from '@/tests/utils/helpers'
 import { testFixtures } from '@/tests/fixtures'
 import {
@@ -450,7 +450,7 @@ describe('API Integration Tests', () => {
       it('should create a new user successfully', async () => {
         const mockUserRouteHandler = createMockUserRouteHandler()
 
-        vi.mocked(userRepository.create).mockResolvedValue({
+        (userRepository.create).mockResolvedValue({
           id: '1',
           email: 'newuser@example.com',
           name: 'New User',
@@ -460,7 +460,7 @@ describe('API Integration Tests', () => {
           updatedAt: new Date()
         })
         // @ts-ignore
-vi.mocked(validateUserData).mockReturnValue({ success: true })
+(validateUserData).mockReturnValue({ success: true })
 
         const request = createMockRequest({
           method: 'POST',
@@ -486,7 +486,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should reject invalid user data', async () => {
         const mockUserRouteHandler = createMockUserRouteHandler()
 
-        vi.mocked(validateUserData).mockReturnValue({
+        (validateUserData).mockReturnValue({
           success: false,
           error: { message: 'Invalid email format' }
         })
@@ -509,8 +509,8 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
         const mockUserRouteHandler = createMockUserRouteHandler()
 
         // @ts-ignore
-vi.mocked(validateUserData).mockReturnValue({ success: true })
-        vi.mocked(userRepository.create).mockRejectedValue(new Error('Database connection failed'))
+(validateUserData).mockReturnValue({ success: true })
+        (userRepository.create).mockRejectedValue(new Error('Database connection failed'))
 
         const request = createMockRequest({
           method: 'POST',
@@ -533,7 +533,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
         const mockUserIdRouteHandler = createMockUserIdRouteHandler()
 
         // @ts-ignore
-vi.mocked(userRepository.findById).mockResolvedValue(testFixtures.users.validUsers[0])
+(userRepository.findById).mockResolvedValue(testFixtures.users.validUsers[0])
 
         const request = createMockRequest({
           method: 'GET',
@@ -550,7 +550,7 @@ vi.mocked(userRepository.findById).mockResolvedValue(testFixtures.users.validUse
       it('should return 404 for non-existent user', async () => {
         const mockUserIdRouteHandler = createMockUserIdRouteHandler()
 
-        vi.mocked(userRepository.findById).mockResolvedValue(null)
+        (userRepository.findById).mockResolvedValue(null)
 
         const request = createMockRequest({
           method: 'GET',
@@ -569,8 +569,8 @@ vi.mocked(userRepository.findById).mockResolvedValue(testFixtures.users.validUse
         const mockUserIdRouteHandler = createMockUserIdRouteHandler()
 
         // @ts-ignore
-vi.mocked(validateUserData).mockReturnValue({ success: true })
-        vi.mocked(userRepository.update).mockResolvedValue(testFixtures.users.validUsers[0])
+(validateUserData).mockReturnValue({ success: true })
+        (userRepository.update).mockResolvedValue(testFixtures.users.validUsers[0])
 
         const request = createMockRequest({
           method: 'PUT',
@@ -593,7 +593,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should delete user successfully', async () => {
         const mockUserIdRouteHandler = createMockUserIdRouteHandler()
 
-        vi.mocked(userRepository.delete).mockResolvedValue(testFixtures.users.validUsers[0])
+        (userRepository.delete).mockResolvedValue(testFixtures.users.validUsers[0])
 
         const request = createMockRequest({
           method: 'DELETE',
@@ -614,7 +614,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should fetch tasks for authenticated user', async () => {
         const mockTasksRouteHandler = createMockTasksRouteHandler()
 
-        vi.mocked(taskRepository.findByUserId).mockResolvedValue(testFixtures.tasks.validTasks)
+        (taskRepository.findByUserId).mockResolvedValue(testFixtures.tasks.validTasks)
 
         const request = createMockRequest({
           method: 'GET',
@@ -646,7 +646,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should create a new task', async () => {
         const mockTasksRouteHandler = createMockTasksRouteHandler()
 
-        vi.mocked(validateTaskData).mockReturnValue({
+        (validateTaskData).mockReturnValue({
           success: true,
           data: {
             id: '1',
@@ -659,7 +659,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
             updatedAt: new Date()
           }
         })
-        vi.mocked(taskRepository.create).mockResolvedValue({
+        (taskRepository.create).mockResolvedValue({
           id: '1',
           title: 'New Task',
           description: 'Task description',
@@ -694,7 +694,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should reject invalid task data', async () => {
         const mockTasksRouteHandler = createMockTasksRouteHandler()
 
-        vi.mocked(validateTaskData).mockReturnValue({
+        (validateTaskData).mockReturnValue({
           success: false,
           error: { message: 'Invalid task data' }
         })
@@ -716,8 +716,8 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should update existing task', async () => {
         const mockTaskIdRouteHandler = createMockTaskIdRouteHandler()
 
-        vi.mocked(taskRepository.findById).mockResolvedValue(testFixtures.tasks.validTasks[0])
-        vi.mocked(taskRepository.update).mockResolvedValue(testFixtures.tasks.validTasks[0])
+        (taskRepository.findById).mockResolvedValue(testFixtures.tasks.validTasks[0])
+        (taskRepository.update).mockResolvedValue(testFixtures.tasks.validTasks[0])
 
         const request = createMockRequest({
           method: 'PUT',
@@ -736,7 +736,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should return 404 for non-existent task', async () => {
         const mockTaskIdRouteHandler = createMockTaskIdRouteHandler()
 
-        vi.mocked(taskRepository.findById).mockResolvedValue(null)
+        (taskRepository.findById).mockResolvedValue(null)
 
         const request = createMockRequest({
           method: 'PUT',
@@ -756,8 +756,8 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should delete task successfully', async () => {
         const mockTaskIdRouteHandler = createMockTaskIdRouteHandler()
 
-        vi.mocked(taskRepository.findById).mockResolvedValue(testFixtures.tasks.validTasks[0])
-        vi.mocked(taskRepository.delete).mockResolvedValue(testFixtures.tasks.validTasks[0])
+        (taskRepository.findById).mockResolvedValue(testFixtures.tasks.validTasks[0])
+        (taskRepository.delete).mockResolvedValue(testFixtures.tasks.validTasks[0])
 
         const request = createMockRequest({
           method: 'DELETE',
@@ -777,7 +777,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should perform bulk operations', async () => {
         const mockTasksBulkRouteHandler = createMockTasksBulkRouteHandler()
 
-        vi.mocked(taskRepository.bulkUpdate).mockResolvedValue([testFixtures.tasks.validTasks[0], testFixtures.tasks.validTasks[1]])
+        (taskRepository.bulkUpdate).mockResolvedValue([testFixtures.tasks.validTasks[0], testFixtures.tasks.validTasks[1]])
 
         const request = createMockRequest({
           method: 'POST',
@@ -825,7 +825,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should fetch events for date range', async () => {
         const mockCalendarEventsRouteHandler = createMockCalendarEventsRouteHandler()
 
-        vi.mocked(calendarEventRepository.findByUserId).mockResolvedValue(testFixtures.events.validEvents)
+        (calendarEventRepository.findByUserId).mockResolvedValue(testFixtures.events.validEvents)
 
         const request = createMockRequest({
           method: 'GET',
@@ -848,7 +848,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
       it('should create new calendar event', async () => {
         const mockCalendarEventsRouteHandler = createMockCalendarEventsRouteHandler()
 
-        vi.mocked(validateEventData).mockReturnValue({
+        (validateEventData).mockReturnValue({
           success: true,
           data: {
             id: '1',
@@ -862,7 +862,7 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
             updatedAt: new Date()
           }
         })
-        vi.mocked(calendarEventRepository.create).mockResolvedValue({
+        (calendarEventRepository.create).mockResolvedValue({
           id: '1',
           title: 'New Event',
           description: 'Event description',
@@ -900,12 +900,12 @@ vi.mocked(validateUserData).mockReturnValue({ success: true })
         const mockCalendarEventsRouteHandler = createMockCalendarEventsRouteHandler()
 
         // @ts-ignore
-vi.mocked(validateEventData).mockReturnValue({ success: true })
-        vi.mocked(calendarEventRepository.findConflicts).mockResolvedValue([{
+(validateEventData).mockReturnValue({ success: true })
+        (calendarEventRepository.findConflicts).mockResolvedValue([{
           id: 'conflicting-event',
           title: 'Conflicting Event',
         }])
-        vi.mocked(calendarEventRepository.create).mockResolvedValue(testFixtures.events.validEvents[0])
+        (calendarEventRepository.create).mockResolvedValue(testFixtures.events.validEvents[0])
 
         const request = createMockRequest({
           method: 'POST',
@@ -930,7 +930,7 @@ vi.mocked(validateEventData).mockReturnValue({ success: true })
       it('should fetch specific event', async () => {
         const mockCalendarEventIdRouteHandler = createMockCalendarEventIdRouteHandler()
 
-        vi.mocked(calendarEventRepository.findById).mockResolvedValue(testFixtures.events.validEvents[0])
+        (calendarEventRepository.findById).mockResolvedValue(testFixtures.events.validEvents[0])
 
         const request = createMockRequest({
           method: 'GET',
@@ -1091,7 +1091,7 @@ vi.mocked(validateEventData).mockReturnValue({ success: true })
     it('should handle server errors gracefully', async () => {
       const mockUserIdRouteHandler = createMockUserIdRouteHandler()
 
-      vi.mocked(userRepository.findById).mockRejectedValue(new Error('Server error'))
+      (userRepository.findById).mockRejectedValue(new Error('Server error'))
 
       const request = createMockRequest({
         method: 'GET',
@@ -1107,7 +1107,7 @@ vi.mocked(validateEventData).mockReturnValue({ success: true })
     it('should provide meaningful error messages', async () => {
       const mockUserIdRouteHandler = createMockUserIdRouteHandler()
 
-      vi.mocked(userRepository.findById).mockRejectedValue(new Error('User not found'))
+      (userRepository.findById).mockRejectedValue(new Error('User not found'))
 
       const request = createMockRequest({
         method: 'GET',

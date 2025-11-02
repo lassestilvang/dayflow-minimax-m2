@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi, test } from 'bun:test'
 import { testUtils } from '@/tests/utils'
 import { generatorUtils } from '@/tests/utils/generators'
-import { vi } from 'vitest'
 
 describe('Performance Tests', () => {
   describe('Memory Management', () => {

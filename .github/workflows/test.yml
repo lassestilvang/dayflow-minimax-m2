@@ -38,7 +38,7 @@ jobs:
       run: bun run build
     
     - name: Run unit and integration tests
-      run: bun run test:coverage
+      run: bun test --coverage
     
     - name: Run E2E tests
       run: bun run test:e2e
@@ -79,7 +79,7 @@ jobs:
       run: bun run build
     
     - name: Run performance tests
-      run: bun run test:performance
+      run: bun test tests/perf
     
     - name: Upload performance results
       uses: actions/upload-artifact@v4

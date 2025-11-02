@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'bun:test'
 
 // Test helper utilities
 export const helperUtils = {

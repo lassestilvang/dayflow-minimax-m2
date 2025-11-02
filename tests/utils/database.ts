@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'bun:test'
 import type { DatabaseUser, DatabaseTask, DatabaseCalendarEvent, DatabaseCategory, DatabaseTag } from '@/types/database'
 
 // Mock database utilities

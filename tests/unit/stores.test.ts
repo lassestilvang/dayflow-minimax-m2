@@ -2,7 +2,7 @@
 // Disabling strict TypeScript checks for test files to focus on functionality
 // All critical type issues resolved, remaining are test-specific mock type mismatches
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi, test } from 'bun:test'
 import { act } from '@testing-library/react'
 import {
   useTaskStore,
@@ -157,7 +157,7 @@ describe('Enhanced Calendar Store', () => {
   describe('Event Management', () => {
     beforeEach(() => {
       // These are already mocked at the top of the file
-      vi.mocked(vi.fn()).mockReturnValue({ success: true })
+      (vi.fn()).mockReturnValue({ success: true })
     })
 
     it('should add event successfully', async () => {

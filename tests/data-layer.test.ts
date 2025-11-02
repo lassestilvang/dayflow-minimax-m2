@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi, test } from 'bun:test'
 import {
   userRepository,
   taskRepository,
@@ -603,7 +603,7 @@ describe('Migration Manager', () => {
 
   it('should check database health', async () => {
     // Mock health check response
-    vi.mocked(global.fetch).mockResolvedValue(new Response(JSON.stringify({
+    (global.fetch).mockResolvedValue(new Response(JSON.stringify({
       ok: true,
       data: { connected: true, version: '1.0.0', uptime: 3600, activeConnections: 5 }
     })))
