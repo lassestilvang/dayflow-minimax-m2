@@ -173,7 +173,7 @@ vi.mock('@/lib/db', async () => {
             // Simple direct filtering based on condition structure
             if (condition?.type === 'eq') {
               const columnName = condition.column?.name || condition.column
-              return Promise.resolve(data.filter(item => item[columnName] === condition.value))
+              return Promise.resolve(data.filter(item => (item as any)[columnName] === condition.value))
             }
             
             if (condition?.type === 'and') {
@@ -182,18 +182,18 @@ vi.mock('@/lib/db', async () => {
                   const columnName = cond.column?.name || cond.column
                   
                   if (cond.type === 'eq') {
-                    return item[columnName] === cond.value
+                    return (item as any)[columnName] === cond.value
                   }
                   if (cond.type === 'lte') {
-                    const val = item[columnName]
+                    const val = (item as any)[columnName]
                     return val && new Date(val) <= new Date(cond.value)
                   }
                   if (cond.type === 'gte') {
-                    const val = item[columnName]
+                    const val = (item as any)[columnName]
                     return val && new Date(val) >= new Date(cond.value)
                   }
                   if (cond.type === 'between') {
-                    const val = item[columnName]
+                    const val = (item as any)[columnName]
                     return val && new Date(val) >= new Date(cond.start) && new Date(val) <= new Date(cond.end)
                   }
                   if (cond.type === 'sql') {
@@ -212,15 +212,15 @@ vi.mock('@/lib/db', async () => {
           },
           leftJoin: () => ({
             leftJoin: () => ({
-              where: () => Promise.resolve([{ event: data[0] || {}, tags: [] }])
+              where: () => Promise.resolve([{ event: getTableData()[0] || {}, tags: [] }])
             })
           }),
           orderBy: () => ({
             limit: (count: number) => ({
-              offset: () => Promise.resolve(data.slice(0, count))
+              offset: () => Promise.resolve(getTableData().slice(0, count))
             })
           }),
-          limit: (count: number) => Promise.resolve(count ? data.slice(0, count) : data)
+          limit: (count: number) => Promise.resolve(count ? getTableData().slice(0, count) : getTableData())
         }
       }
     }),
@@ -236,7 +236,7 @@ vi.mock('@/lib/db', async () => {
             const columnName = condition.column?.name || 'id'
             const value = condition.value
             
-            const record = tableData.find(r => r[columnName] === value)
+            const record = tableData.find(r => (r as any)[columnName] === value)
             
             if (record) {
               Object.assign(record, { ...data, updatedAt: new Date() })
@@ -259,7 +259,7 @@ vi.mock('@/lib/db', async () => {
           const columnName = condition.column?.name || 'id'
           const value = condition.value
           
-          const index = tableData.findIndex(r => r[columnName] === value)
+          const index = tableData.findIndex(r => (r as any)[columnName] === value)
           
           if (index !== -1) {
             const [deleted] = tableData.splice(index, 1)
@@ -284,7 +284,7 @@ vi.mock('@/lib/db', async () => {
                 const columnName = condition.column?.name || 'id'
                 const value = condition.value
                 
-                const record = tableData.find(r => r[columnName] === value)
+                const record = tableData.find(r => (r as any)[columnName] === value)
                 
                 if (record) {
                   Object.assign(record, { ...data, updatedAt: new Date() })
