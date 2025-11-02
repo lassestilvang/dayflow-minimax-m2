@@ -1,4 +1,4 @@
-import type { DatabaseUser, UserValidation } from '@/types/database'
+import type { DatabaseUser } from '@/types/database'
 
 // User fixtures for consistent testing
 export const userFixtures = {
@@ -18,7 +18,7 @@ export const userFixtures = {
       email: 'jane.smith@example.com',
       name: 'Jane Smith',
       workosId: 'workos_789012',
-      avatar: 'https://example.com/avatars/jane.jpg',
+      image: 'https://example.com/avatars/jane.jpg',
       createdAt: new Date('2024-01-02T00:00:00Z'),
       updatedAt: new Date('2024-01-02T00:00:00Z'),
     },
@@ -39,30 +39,27 @@ export const userFixtures = {
     email: 'admin@dayflow.com',
     name: 'DayFlow Admin',
     workosId: 'workos_admin',
-    avatar: null,
     createdAt: new Date('2024-01-01T00:00:00Z'),
     updatedAt: new Date('2024-01-01T00:00:00Z'),
-  } as DatabaseUser,
+  } as unknown as DatabaseUser,
 
   testUser: {
     id: 'test-user-001',
     email: 'test@dayflow.com',
     name: 'Test User',
     workosId: 'workos_test',
-    avatar: null,
     createdAt: new Date('2024-01-01T00:00:00Z'),
     updatedAt: new Date('2024-01-01T00:00:00Z'),
-  } as DatabaseUser,
+  } as unknown as DatabaseUser,
 
   demoUser: {
     id: 'demo-user-001',
     email: 'demo@dayflow.com',
     name: 'Demo User',
     workosId: 'workos_demo',
-    avatar: null,
     createdAt: new Date('2024-01-01T00:00:00Z'),
     updatedAt: new Date('2024-01-01T00:00:00Z'),
-  } as DatabaseUser,
+  } as unknown as DatabaseUser,
 
   // User insertion data (without id, createdAt, updatedAt)
   userInsertData: [
@@ -140,12 +137,11 @@ export const userFixtures = {
     email: 'authenticated@example.com',
     name: 'Authenticated User',
     workosId: 'workos_auth',
-    avatar: null,
     createdAt: new Date('2024-01-01T00:00:00Z'),
     updatedAt: new Date('2024-01-01T00:00:00Z'),
-  } as DatabaseUser,
+  } as unknown as DatabaseUser,
 
-  unauthenticatedUser: null as DatabaseUser | null,
+  unauthenticatedUser: null as any,
 
   // Session data for testing
   userSessions: [
@@ -176,9 +172,11 @@ export const userFixtures = {
       email: `user${Date.now()}@example.com`,
       name: 'Test User',
       workosId: `workos_${Date.now()}`,
-      avatar: null,
       createdAt: new Date(),
       updatedAt: new Date(),
+      timezone: overrides.timezone || 'UTC',
+      image: overrides.image || undefined,
+      preferences: overrides.preferences || {},
       ...overrides,
     }
   },
@@ -199,10 +197,10 @@ export const userFixtures = {
       activeUsers: this.validUsers.filter(user => 
         user.email.includes('example.com') && user.workosId
       ),
-      usersWithAvatars: this.validUsers.filter(user => user.avatar),
-      usersWithoutAvatars: this.validUsers.filter(user => !user.avatar),
-      adminUsers: [adminUser],
-      testUsers: [testUser],
+      usersWithAvatars: this.validUsers.filter(user => (user as any).avatar),
+      usersWithoutAvatars: this.validUsers.filter(user => !(user as any).avatar),
+      adminUsers: [this.adminUser],
+      testUsers: [this.testUser],
       demoUsers: [this.demoUser],
     }
   },
@@ -249,7 +247,7 @@ export const {
 } = userFixtures
 
 // Initialize user relationships after export
-userFixtures.userRelationships.owner = userFixtures.adminUser
-userFixtures.userRelationships.collaborators = userFixtures.validUsers.slice(0, 2)
-userFixtures.userRelationships.viewers = [userFixtures.demoUser]
+userFixtures.userRelationships.owner = userFixtures.adminUser as any
+userFixtures.userRelationships.collaborators = userFixtures.validUsers.slice(0, 2) as any
+userFixtures.userRelationships.viewers = [userFixtures.demoUser] as any
 userFixtures.mockAuthResponses.success.user = userFixtures.authenticatedUser

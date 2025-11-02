@@ -19,6 +19,17 @@ export interface Task {
   userId: string
   createdAt: Date
   updatedAt: Date
+  progress: number
+  recurrence: {
+    type: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
+    interval?: number
+    endDate?: Date
+    daysOfWeek?: number[]
+  }
+  reminder: {
+    enabled: boolean
+    minutesBefore: number
+  }
 }
 
 export interface CalendarEvent {
@@ -33,6 +44,9 @@ export interface CalendarEvent {
   createdAt: Date
   updatedAt: Date
 }
+
+// Combined type for either Task or CalendarEvent
+export type EventOrTask = Task | CalendarEvent
 
 export type TaskStatus = Task['status']
 export type TaskPriority = Task['priority']

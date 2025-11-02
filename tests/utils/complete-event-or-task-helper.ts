@@ -7,49 +7,62 @@ import type { EventOrTask } from '../../types'
 
 export function completeEventOrTask(item: Partial<EventOrTask>): EventOrTask {
   const now = new Date()
+  const itemAny = item as any
   
-  // Base properties that all items need
-  const baseCompleted: EventOrTask = {
-    id: item.id || 'test-id',
-    userId: item.userId || 'test-user',
-    title: item.title || 'Test Title',
-    description: item.description || 'Test Description',
-    status: item.status || 'pending',
-    priority: item.priority || 'medium',
-    createdAt: item.createdAt || now,
-    updatedAt: item.updatedAt || now,
-    
-    // Task-specific required properties
-    progress: item.progress || 0,
-    recurrence: item.recurrence || { type: 'none' },
-    reminder: item.reminder || null,
-  }
-
-  // Add event-specific properties if this is an event
-  if ('startTime' in item || item.isAllDay !== undefined) {
+  // Check if this is a task by looking for task-specific properties
+  const isTask = 'status' in item || 'progress' in item
+  
+  if (isTask) {
+    // Complete as Task
     return {
-      ...baseCompleted,
-      // Event properties
-      startTime: (item as any).startTime || new Date(),
-      endTime: (item as any).endTime || new Date(),
-      isAllDay: (item as any).isAllDay || false,
-      location: (item as any).location || null,
-      attendees: (item as any).attendees || [],
-    }
+      id: itemAny.id || 'test-task-id',
+      title: itemAny.title || 'Test Task',
+      description: itemAny.description || 'Test Description',
+      status: itemAny.status || 'pending',
+      priority: itemAny.priority || 'medium',
+      userId: itemAny.userId || 'test-user',
+      createdAt: itemAny.createdAt || now,
+      updatedAt: itemAny.updatedAt || now,
+      progress: itemAny.progress || 0,
+      recurrence: itemAny.recurrence || { type: 'none' },
+      reminder: itemAny.reminder || { enabled: false, minutesBefore: 15 },
+      dueDate: itemAny.dueDate,
+      completedAt: itemAny.completedAt,
+    } as EventOrTask
+  } else {
+    // Complete as CalendarEvent
+    return {
+      id: itemAny.id || 'test-event-id',
+      title: itemAny.title || 'Test Event',
+      description: itemAny.description || 'Test Description',
+      startTime: itemAny.startTime || now,
+      endTime: itemAny.endTime || now,
+      isAllDay: itemAny.isAllDay || false,
+      location: itemAny.location,
+      userId: itemAny.userId || 'test-user',
+      createdAt: itemAny.createdAt || now,
+      updatedAt: itemAny.updatedAt || now,
+      recurrence: itemAny.recurrence || { type: 'none' },
+      reminder: itemAny.reminder || { enabled: false, minutesBefore: 15 },
+      categoryId: itemAny.categoryId,
+      attendees: itemAny.attendees || [],
+    } as EventOrTask
   }
-
-  // Task properties are already included in baseCompleted
-  return baseCompleted
 }
 
 export function completeTask(task: Partial<EventOrTask>): EventOrTask {
-  return completeEventOrTask(task)
+  return completeEventOrTask({
+    ...task,
+    status: (task as any).status || 'pending',
+    priority: (task as any).priority || 'medium',
+    progress: (task as any).progress || 0,
+  })
 }
 
 export function completeEvent(event: Partial<EventOrTask>): EventOrTask {
   return completeEventOrTask({
     ...event,
-    isAllDay: event.isAllDay || false,
+    isAllDay: (event as any).isAllDay || false,
     startTime: (event as any).startTime || new Date(),
     endTime: (event as any).endTime || new Date(),
   })
