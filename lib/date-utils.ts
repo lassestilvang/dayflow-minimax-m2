@@ -163,11 +163,18 @@ export function formatEventTime(event: EventOrTask): string {
 }
 
 export function getWeekDisplayText(week: CalendarWeek): string {
-  const startMonth = format(week.startDate, 'MMMM')
-  const endMonth = format(week.endDate, 'MMMM')
-  const startDay = format(week.startDate, 'd')
-  const endDay = format(week.endDate, 'd')
-  const year = format(week.startDate, 'yyyy')
+  // Ensure we have valid Date objects, convert from string if needed
+  const safeWeek = {
+    ...week,
+    startDate: week.startDate instanceof Date ? week.startDate : new Date(week.startDate),
+    endDate: week.endDate instanceof Date ? week.endDate : new Date(week.endDate),
+  }
+  
+  const startMonth = format(safeWeek.startDate, 'MMMM')
+  const endMonth = format(safeWeek.endDate, 'MMMM')
+  const startDay = format(safeWeek.startDate, 'd')
+  const endDay = format(safeWeek.endDate, 'd')
+  const year = format(safeWeek.startDate, 'yyyy')
   
   if (startMonth === endMonth) {
     return `${startMonth} ${startDay} – ${endDay}, ${year}`

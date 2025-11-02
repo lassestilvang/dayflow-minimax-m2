@@ -317,6 +317,25 @@ export const useWeeklyCalendarStore = create<WeeklyCalendarStore>()(
         viewSettings: state.viewSettings,
         currentWeek: state.currentWeek,
       }),
+      // Transform persisted data to ensure Date objects are properly restored
+      transform: (persistedState) => {
+        if (persistedState && persistedState.currentWeek) {
+          const week = persistedState.currentWeek
+          return {
+            ...persistedState,
+            currentWeek: {
+              ...week,
+              startDate: new Date(week.startDate),
+              endDate: new Date(week.endDate),
+              days: week.days ? week.days.map((day: any) => ({
+                ...day,
+                date: new Date(day.date),
+              })) : [],
+            },
+          }
+        }
+        return persistedState
+      },
     }
   )
 )

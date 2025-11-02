@@ -70,14 +70,26 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
 }
 
 const WeekDisplay: React.FC<{ week: CalendarWeek }> = ({ week }) => {
-  const isCurrentWeek = getCurrentWeek().startDate.getTime() === week.startDate.getTime()
+  // Ensure we have valid Date objects, convert from string if needed
+  const safeWeek = {
+    ...week,
+    startDate: week.startDate instanceof Date ? week.startDate : new Date(week.startDate),
+    endDate: week.endDate instanceof Date ? week.endDate : new Date(week.endDate),
+    days: week.days?.map(day => ({
+      ...day,
+      date: day.date instanceof Date ? day.date : new Date(day.date)
+    })) || []
+  }
+  
+  const currentWeek = getCurrentWeek()
+  const isCurrentWeek = currentWeek.startDate.getTime() === safeWeek.startDate.getTime()
   
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2">
         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
         <div className="text-lg font-semibold">
-          {getWeekDisplayText(week)}
+          {getWeekDisplayText(safeWeek)}
         </div>
         {isCurrentWeek && (
           <span className="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md">
