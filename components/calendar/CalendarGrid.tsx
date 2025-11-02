@@ -68,7 +68,10 @@ const DayColumn: React.FC<DayColumnProps> = ({
   events,
   onTimeSlotClick,
 }) => {
-  const dayEvents = getEventsForDay(events, day.date)
+  // Ensure we have a valid Date object, convert from string if needed
+  const safeDate = day.date instanceof Date ? day.date : new Date(day.date)
+  
+  const dayEvents = getEventsForDay(events, safeDate)
 
   return (
     <div className="flex-1 border-r border-border last:border-r-0">
@@ -80,13 +83,13 @@ const DayColumn: React.FC<DayColumnProps> = ({
         )}
       >
         <div className="text-sm text-muted-foreground">
-          {format(day.date, 'EEE')}
+          {format(safeDate, 'EEE')}
         </div>
         <div className={cn(
           'text-lg font-medium',
           day.isToday && 'text-primary'
         )}>
-          {format(day.date, 'd')}
+          {format(safeDate, 'd')}
         </div>
       </div>
 
@@ -95,7 +98,7 @@ const DayColumn: React.FC<DayColumnProps> = ({
         {timeSlots.map((slot) => (
           <TimeSlot
             key={`slot-${dayIndex}-${slot.hour}`}
-            date={day.date}
+            date={safeDate}
             hour={slot.hour}
             dayIndex={dayIndex}
             onClick={onTimeSlotClick}
@@ -169,25 +172,31 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       <div className="flex">
         <div className="w-16 flex-shrink-0" />
         <div className="flex-1 grid grid-cols-5 border-b border-border">
-          {daysToShow.map((day, index) => (
-            <div
-              key={day.date.toISOString()}
-              className={cn(
-                'p-3 text-center border-r border-border last:border-r-0',
-                day.isToday && 'bg-primary/10'
-              )}
-            >
-              <div className="text-sm text-muted-foreground">
-                {format(day.date, 'EEE')}
+          {daysToShow.map((day, index) => {
+            // Ensure we have a valid Date object, convert from string if needed
+            const safeDate = day.date instanceof Date ? day.date : new Date(day.date)
+            const dateKey = safeDate.toISOString()
+            
+            return (
+              <div
+                key={dateKey}
+                className={cn(
+                  'p-3 text-center border-r border-border last:border-r-0',
+                  day.isToday && 'bg-primary/10'
+                )}
+              >
+                <div className="text-sm text-muted-foreground">
+                  {format(safeDate, 'EEE')}
+                </div>
+                <div className={cn(
+                  'text-lg font-medium',
+                  day.isToday && 'text-primary'
+                )}>
+                  {format(safeDate, 'd')}
+                </div>
               </div>
-              <div className={cn(
-                'text-lg font-medium',
-                day.isToday && 'text-primary'
-              )}>
-                {format(day.date, 'd')}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
@@ -210,10 +219,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         {/* Calendar days */}
         <div className="flex-1 flex relative">
           {daysToShow.map((day, index) => {
-            const dayEvents = getEventsForDay(events, day.date)
+            // Ensure we have a valid Date object, convert from string if needed
+            const safeDate = day.date instanceof Date ? day.date : new Date(day.date)
+            const dateKey = safeDate.toISOString()
+            const dayEvents = getEventsForDay(events, safeDate)
+            
             return (
               <DayColumn
-                key={day.date.toISOString()}
+                key={dateKey}
                 day={day}
                 dayIndex={index}
                 timeSlots={timeSlots}

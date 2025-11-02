@@ -317,24 +317,44 @@ export const useWeeklyCalendarStore = create<WeeklyCalendarStore>()(
         viewSettings: state.viewSettings,
         currentWeek: state.currentWeek,
       }),
-      // Transform persisted data to ensure Date objects are properly restored
-      transform: (persistedState) => {
-        if (persistedState && persistedState.currentWeek) {
-          const week = persistedState.currentWeek
-          return {
-            ...persistedState,
-            currentWeek: {
-              ...week,
-              startDate: new Date(week.startDate),
-              endDate: new Date(week.endDate),
-              days: week.days ? week.days.map((day: any) => ({
-                ...day,
-                date: new Date(day.date),
-              })) : [],
-            },
+      // Use custom storage to handle date deserialization
+      storage: {
+        getItem: (name) => {
+          const value = localStorage.getItem(name)
+          if (!value) return null
+          
+          try {
+            const parsed = JSON.parse(value)
+            // Transform persisted data to ensure Date objects are properly restored
+            if (parsed && parsed.state && parsed.state.currentWeek) {
+              const week = parsed.state.currentWeek
+              return {
+                ...parsed,
+                state: {
+                  ...parsed.state,
+                  currentWeek: {
+                    ...week,
+                    startDate: new Date(week.startDate),
+                    endDate: new Date(week.endDate),
+                    days: week.days ? week.days.map((day: any) => ({
+                      ...day,
+                      date: new Date(day.date),
+                    })) : [],
+                  },
+                },
+              }
+            }
+            return parsed
+          } catch {
+            return value
           }
-        }
-        return persistedState
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value))
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name)
+        },
       },
     }
   )
