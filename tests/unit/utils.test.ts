@@ -342,7 +342,7 @@ describe('Date Utilities', () => {
 
   describe('Date and Time Formatting', () => {
     it('should format time range correctly', () => {
-      vi.mocked(format).mockImplementation((date: number | Date, formatStr: string) => {
+      vi.mocked(format).mockImplementation((date: string | number | Date, formatStr: string) => {
         const d = new Date(date)
         if (formatStr === 'HH:mm') {
           return d.toISOString().substring(11, 16)
@@ -379,7 +379,7 @@ describe('Date Utilities', () => {
     })
 
     it('should format timed event correctly', () => {
-      vi.mocked(format).mockImplementation((date: number | Date, formatStr: string) => {
+      vi.mocked(format).mockImplementation((date: string | number | Date, formatStr: string) => {
         const d = new Date(date)
         if (formatStr === 'HH:mm') {
           return d.toISOString().substring(11, 16)
