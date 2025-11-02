@@ -4,8 +4,13 @@
  */
 
 import { UserIntegration, IntegrationAuditLog, integrationAuditLog } from '../db/integrations-schema'
-import { db } from '../db'
+import { getDatabase } from '../db'
 import { eq, and, gt, desc, inArray } from 'drizzle-orm'
+
+// Get database instance
+function getDB() {
+  return getDatabase()
+}
 
 interface AuditEvent {
   userIntegrationId: string
@@ -72,7 +77,7 @@ export class AuditLogger {
 
     // Store in database
     try {
-      await db.insert(integrationAuditLog).values({
+      await getDB().insert(integrationAuditLog).values({
         userIntegrationId: auditEvent.userIntegrationId,
         userId: auditEvent.userId,
         action: auditEvent.action,
@@ -207,7 +212,7 @@ export class AuditLogger {
     retentionPeriod?: number
   ): Promise<void> {
     try {
-      await db.insert(integrationAuditLog).values({
+      await getDB().insert(integrationAuditLog).values({
         userIntegrationId: integrationId,
         userId,
         action: `compliance_${action}`,
@@ -235,7 +240,7 @@ export class AuditLogger {
     offset: number = 0
   ): Promise<IntegrationAuditLog[]> {
     try {
-      const results = await db.select().from(integrationAuditLog)
+      const results = await getDB().select().from(integrationAuditLog)
         .where(eq(integrationAuditLog.userIntegrationId, userIntegrationId))
         .orderBy(desc(integrationAuditLog.createdAt))
         .limit(limit)
@@ -258,7 +263,7 @@ export class AuditLogger {
     limit: number = 100
   ): Promise<IntegrationAuditLog[]> {
     try {
-      let query = db.select().from(integrationAuditLog)
+      let query = getDB().select().from(integrationAuditLog)
         .where(eq(integrationAuditLog.userId, userId))
 
       if (startDate) {
@@ -536,7 +541,7 @@ export class AuditLogger {
   async deleteUserData(userId: string, integrationIds?: string[]): Promise<void> {
     try {
       // Delete audit log entries for user
-      let query = db.delete(integrationAuditLog).where(eq(integrationAuditLog.userId, userId))
+      let query = getDB().delete(integrationAuditLog).where(eq(integrationAuditLog.userId, userId))
       
       if (integrationIds && integrationIds.length > 0) {
         query = (query as any).where(

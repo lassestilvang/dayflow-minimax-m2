@@ -6,9 +6,14 @@
 import { BaseIntegrationService, IntegrationConfig, ExternalTask, TaskData, SyncResult, IntegrationError, RateLimitError, ValidationError } from './base'
 import { RateLimiter, DataTransformer, ConflictDetector, RetryHandler, WebhookUtils, OAuthUtils } from './utils'
 import { Task } from '../db/schema'
-import { db } from '../db'
+import { getDatabase } from '../db'
 import { externalItems } from '../db/integrations-schema'
 import { eq, and } from 'drizzle-orm'
+
+// Get database instance
+function getDB() {
+  return getDatabase()
+}
 
 interface NotionTask {
   id: string

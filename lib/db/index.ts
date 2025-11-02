@@ -3,23 +3,53 @@ import { neon } from '@neondatabase/serverless'
 import * as schema from './schema'
 import * as integrationsSchema from './integrations-schema'
 
-// Neon database connection for serverless environment
-const connectionString = process.env.DATABASE_URL
+// Internal state for lazy initialization
+let dbInstance: any = null
+let sqlInstance: any = null
+let isInitialized = false
 
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is required')
+// Initialize database connection lazily
+function initializeDatabase() {
+  if (isInitialized && dbInstance) {
+    return { db: dbInstance, sql: sqlInstance }
+  }
+
+  // Check for DATABASE_URL only when actually needed
+  const connectionString = process.env.DATABASE_URL
+  if (!connectionString) {
+    throw new Error('DATABASE_URL environment variable is required for database operations')
+  }
+
+  // Create Neon database instance
+  const sql = neon(connectionString)
+
+  // Create Drizzle instance with schema
+  // @ts-ignore - Type compatibility issue between drizzle-orm and @neondatabase/serverless versions
+  const db = drizzle(sql, {
+    schema: { ...schema, ...integrationsSchema },
+    mode: 'default',
+    logger: process.env.NODE_ENV === 'development'
+  })
+
+  // Cache instances
+  dbInstance = db
+  sqlInstance = sql
+  isInitialized = true
+
+  return { db, sql }
 }
 
-// Create Neon database instance
-const sql = neon(connectionString)
+// Export database access function for lazy initialization
+export function getDatabase() {
+  const { db, sql } = initializeDatabase()
+  return db
+}
 
-// Create Drizzle instance with schema
-// @ts-ignore - Type compatibility issue between drizzle-orm and @neondatabase/serverless versions
-export const db = drizzle(sql, { 
-  schema: { ...schema, ...integrationsSchema }, 
-  mode: 'default',
-  logger: process.env.NODE_ENV === 'development'
-})
+// Export SQL instance for connection testing
+export function getSQL() {
+  const { sql } = initializeDatabase()
+  return sql
+}
 
 // Export database schema types
 export type Database = typeof schema
@@ -43,6 +73,7 @@ export interface DatabaseStatus {
 export const checkDatabaseConnection = async (): Promise<DatabaseStatus> => {
   try {
     // Test connection with a simple query
+    const sql = getSQL()
     await sql`SELECT 1`
     return { connected: true }
   } catch (error) {

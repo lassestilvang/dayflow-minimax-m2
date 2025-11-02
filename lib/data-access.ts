@@ -1,5 +1,5 @@
 import { and, eq, gte, lte, like, ilike, inArray, sql, desc, asc, between } from 'drizzle-orm'
-import { db, type User, type UserInsert, type Task, type TaskInsert, type CalendarEvent, type CalendarEventInsert } from './db'
+import { getDatabase, type User, type UserInsert, type Task, type TaskInsert, type CalendarEvent, type CalendarEventInsert } from './db'
 import { 
   users, 
   tasks, 
@@ -65,6 +65,11 @@ export class ConflictError extends Error {
   }
 }
 
+// Lazy database initialization
+function getDB() {
+  return getDatabase()
+}
+
 // Base repository class
 abstract class BaseRepository<T, TInsert, TUpdate> {
   constructor(
@@ -80,6 +85,7 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
     }
 
     try {
+      const db = getDB()
       const result = await db.insert(this.table).values(data as any).returning()
       return (result as any[])[0] as T
     } catch (error: any) {
@@ -92,6 +98,7 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
 
   async findById(id: string): Promise<T | null> {
     try {
+      const db = getDB()
       const result = await db.select().from(this.table).where(eq(this.table.id, id)).limit(1)
       return (result as T[])[0] || null
     } catch (error: any) {
@@ -106,6 +113,7 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
     }
 
     try {
+      const db = getDB()
       const result = await db
         .update(this.table)
         .set({ ...data, updatedAt: new Date() })
@@ -125,6 +133,7 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
 
   async delete(id: string): Promise<void> {
     try {
+      const db = getDB()
       const result = await db.delete(this.table).where(eq(this.table.id, id)).returning()
       const deleted = (result as any[])[0]
       if (!deleted) {
@@ -142,6 +151,8 @@ abstract class BaseRepository<T, TInsert, TUpdate> {
     sort: SortValidation = { field: 'createdAt', direction: 'desc' }
   ): Promise<{ data: T[]; total: number }> {
     try {
+      const db = getDB()
+      
       // Build WHERE conditions
       const conditions = []
       for (const [key, value] of Object.entries(filters)) {
@@ -184,6 +195,7 @@ export class UserRepository extends BaseRepository<User, UserInsert, Partial<Use
 
   async findByEmail(email: string): Promise<User | null> {
     try {
+      const db = getDB()
       const result = await db.select().from(users).where(eq(users.email, email)).limit(1)
       return result[0] || null
     } catch (error: any) {
@@ -193,6 +205,7 @@ export class UserRepository extends BaseRepository<User, UserInsert, Partial<Use
 
   async findByWorkosId(workosId: string): Promise<User | null> {
     try {
+      const db = getDB()
       const result = await db.select().from(users).where(eq(users.workosId, workosId)).limit(1)
       return result[0] || null
     } catch (error: any) {
@@ -213,6 +226,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async findByUserId(userId: string): Promise<Task[]> {
     try {
+      const db = getDB()
       return await db.select().from(tasks).where(eq(tasks.userId, userId))
     } catch (error: any) {
       throw new DatabaseError('Failed to fetch tasks by user', error.code, error)
@@ -221,6 +235,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async findWithFilters(userId: string, filters: TaskFilterValidation): Promise<Task[]> {
     try {
+      const db = getDB()
       const conditions = [eq(tasks.userId, userId)]
       
       if (filters.status) {
@@ -243,6 +258,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async findOverdue(userId: string): Promise<Task[]> {
     try {
+      const db = getDB()
       const now = new Date()
       return await db
         .select()
@@ -261,6 +277,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async findByDateRange(userId: string, startDate: Date, endDate: Date): Promise<Task[]> {
     try {
+      const db = getDB()
       return await db
         .select()
         .from(tasks)
@@ -277,6 +294,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async bulkUpdate(data: BulkTaskUpdateValidation): Promise<Task[]> {
     try {
+      const db = getDB()
       const results = await db.transaction(async (tx: any) => {
         const updatedTasks = []
         for (const id of data.ids) {
@@ -297,6 +315,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async addTag(taskId: string, tagId: string): Promise<void> {
     try {
+      const db = getDB()
       await db.insert(taskTags).values({ taskId, tagId })
     } catch (error: any) {
       if (error.code === '23505') return // Already exists
@@ -306,6 +325,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async removeTag(taskId: string, tagId: string): Promise<void> {
     try {
+      const db = getDB()
       await db.delete(taskTags).where(and(eq(taskTags.taskId, taskId), eq(taskTags.tagId, tagId)))
     } catch (error: any) {
       throw new DatabaseError('Failed to remove tag from task', error.code, error)
@@ -314,6 +334,7 @@ export class TaskRepository extends BaseRepository<Task, TaskInsert, Partial<Tas
 
   async getWithTags(taskId: string): Promise<Task & { tags: { id: string; name: string; color: string }[] } | null> {
     try {
+      const db = getDB()
       const result = await db
         .select({
           task: tasks,
@@ -350,6 +371,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async findByUserId(userId: string): Promise<CalendarEvent[]> {
     try {
+      const db = getDB()
       return await db.select().from(calendarEvents).where(eq(calendarEvents.userId, userId))
     } catch (error: any) {
       throw new DatabaseError('Failed to fetch events by user', error.code, error)
@@ -358,6 +380,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async findWithFilters(userId: string, filters: EventFilterValidation): Promise<CalendarEvent[]> {
     try {
+      const db = getDB()
       const conditions = [eq(calendarEvents.userId, userId)]
       
       if (filters.dateRange) {
@@ -391,6 +414,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async findByDateRange(userId: string, startDate: Date, endDate: Date): Promise<CalendarEvent[]> {
     try {
+      const db = getDB()
       return await db
         .select()
         .from(calendarEvents)
@@ -415,6 +439,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
     excludeId?: string
   ): Promise<CalendarEvent[]> {
     try {
+      const db = getDB()
       const conditions = [
         eq(calendarEvents.userId, userId),
         and(
@@ -435,6 +460,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async bulkUpdate(data: BulkEventUpdateValidation): Promise<CalendarEvent[]> {
     try {
+      const db = getDB()
       const results = await db.transaction(async (tx: any) => {
         const updatedEvents = []
         for (const id of data.ids) {
@@ -455,6 +481,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async addTag(eventId: string, tagId: string): Promise<void> {
     try {
+      const db = getDB()
       await db.insert(eventTags).values({ eventId, tagId })
     } catch (error: any) {
       if (error.code === '23505') return // Already exists
@@ -464,6 +491,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async removeTag(eventId: string, tagId: string): Promise<void> {
     try {
+      const db = getDB()
       await db.delete(eventTags).where(and(eq(eventTags.eventId, eventId), eq(eventTags.tagId, tagId)))
     } catch (error: any) {
       throw new DatabaseError('Failed to remove tag from event', error.code, error)
@@ -472,6 +500,7 @@ export class CalendarEventRepository extends BaseRepository<CalendarEvent, Calen
 
   async getWithTags(eventId: string): Promise<CalendarEvent & { tags: { id: string; name: string; color: string }[] } | null> {
     try {
+      const db = getDB()
       const result = await db
         .select({
           event: calendarEvents,
@@ -508,6 +537,7 @@ export class CategoryRepository extends BaseRepository<typeof categories.$inferS
 
   async findByUserId(userId: string) {
     try {
+      const db = getDB()
       return await db.select().from(categories).where(eq(categories.userId, userId))
     } catch (error: any) {
       throw new DatabaseError('Failed to fetch categories by user', error.code, error)
@@ -516,6 +546,7 @@ export class CategoryRepository extends BaseRepository<typeof categories.$inferS
 
   async findByName(userId: string, name: string) {
     try {
+      const db = getDB()
       const result = await db
         .select()
         .from(categories)
@@ -536,6 +567,7 @@ export class TagRepository extends BaseRepository<typeof tags.$inferSelect, type
 
   async findByUserId(userId: string) {
     try {
+      const db = getDB()
       return await db.select().from(tags).where(eq(tags.userId, userId))
     } catch (error: any) {
       throw new DatabaseError('Failed to fetch tags by user', error.code, error)
@@ -544,6 +576,7 @@ export class TagRepository extends BaseRepository<typeof tags.$inferSelect, type
 
   async searchByName(userId: string, query: string) {
     try {
+      const db = getDB()
       return await db
         .select()
         .from(tags)
@@ -554,17 +587,63 @@ export class TagRepository extends BaseRepository<typeof tags.$inferSelect, type
   }
 }
 
-// Repository instances
-export const userRepository = new UserRepository()
-export const taskRepository = new TaskRepository()
-export const calendarEventRepository = new CalendarEventRepository()
-export const categoryRepository = new CategoryRepository()
-export const tagRepository = new TagRepository()
+// Repository instances - created lazily when needed
+let _userRepository: UserRepository | null = null
+let _taskRepository: TaskRepository | null = null
+let _calendarEventRepository: CalendarEventRepository | null = null
+let _categoryRepository: CategoryRepository | null = null
+let _tagRepository: TagRepository | null = null
+
+export const userRepository = new Proxy({} as UserRepository, {
+  get(_, prop) {
+    if (!_userRepository) {
+      _userRepository = new UserRepository()
+    }
+    return (_userRepository as any)[prop]
+  }
+})
+
+export const taskRepository = new Proxy({} as TaskRepository, {
+  get(_, prop) {
+    if (!_taskRepository) {
+      _taskRepository = new TaskRepository()
+    }
+    return (_taskRepository as any)[prop]
+  }
+})
+
+export const calendarEventRepository = new Proxy({} as CalendarEventRepository, {
+  get(_, prop) {
+    if (!_calendarEventRepository) {
+      _calendarEventRepository = new CalendarEventRepository()
+    }
+    return (_calendarEventRepository as any)[prop]
+  }
+})
+
+export const categoryRepository = new Proxy({} as CategoryRepository, {
+  get(_, prop) {
+    if (!_categoryRepository) {
+      _categoryRepository = new CategoryRepository()
+    }
+    return (_categoryRepository as any)[prop]
+  }
+})
+
+export const tagRepository = new Proxy({} as TagRepository, {
+  get(_, prop) {
+    if (!_tagRepository) {
+      _tagRepository = new TagRepository()
+    }
+    return (_tagRepository as any)[prop]
+  }
+})
 
 // Dashboard stats repository
 export class DashboardRepository {
   async getUserStats(userId: string) {
     try {
+      const db = getDB()
       const [taskStats] = await db
         .select({
           totalTasks: sql<number>`count(*)`,

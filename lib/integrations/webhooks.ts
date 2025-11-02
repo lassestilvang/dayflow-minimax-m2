@@ -6,8 +6,13 @@
 import { WebhookUtils, RetryHandler } from './utils'
 import { IntegrationError, ValidationError } from './base'
 import { UserIntegration, IntegrationAuditLog } from '../db/integrations-schema'
-import { db } from '../db'
+import { getDatabase } from '../db'
 import { and, eq, inArray } from 'drizzle-orm'
+
+// Get database instance
+function getDB() {
+  return getDatabase()
+}
 
 interface WebhookEvent {
   id: string
@@ -457,7 +462,7 @@ export class WebhookManager {
       }
 
       // Insert into audit log table
-      // await db.insert(integrationAuditLog).values(auditLog)
+      // await getDB().insert(integrationAuditLog).values(auditLog)
       
     } catch (logError) {
       console.error('Failed to log webhook event:', logError)

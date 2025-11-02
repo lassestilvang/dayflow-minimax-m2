@@ -4,11 +4,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDatabase } from '@/lib/db'
 import { integrationServices, userIntegrations } from '@/lib/db/integrations-schema'
 import { oauthManager } from '@/lib/integrations/oauth'
 import { syncEngine } from '@/lib/integrations/sync-engine'
 import { eq, and } from 'drizzle-orm'
+
+// Get database instance
+function getDB() {
+  return getDatabase()
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     if (serviceName) {
       // Get specific service info
-      const service = await db.select().from(integrationServices)
+      const service = await getDB().select().from(integrationServices)
         .where(eq(integrationServices.name, serviceName))
         .limit(1)
 
@@ -37,7 +42,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Get user's integration for this service
-      const userIntegration = await db.select().from(userIntegrations)
+      const userIntegration = await getDB().select().from(userIntegrations)
         .where(and(
           eq(userIntegrations.userId, userId),
           eq(userIntegrations.serviceName, serviceName)
@@ -51,8 +56,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all services with user integrations
-    const services = await db.select().from(integrationServices)
-    const integrations = await db.select().from(userIntegrations)
+    const services = await getDB().select().from(integrationServices)
+    const integrations = await getDB().select().from(userIntegrations)
       .where(eq(userIntegrations.userId, userId))
 
     const serviceMap = new Map(services.map((s: any) => [s.name, s]))
@@ -119,7 +124,7 @@ export async function POST(request: NextRequest) {
           )
 
           // Get service config
-          const service = await db.select().from(integrationServices)
+          const service = await getDB().select().from(integrationServices)
             .where(eq(integrationServices.name, serviceName))
             .limit(1)
 
@@ -131,7 +136,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Create user integration
-          const [newIntegration] = await db.insert(userIntegrations).values({
+          const [newIntegration] = await getDB().insert(userIntegrations).values({
             userId,
             serviceId: service[0].id,
             serviceName,
@@ -172,7 +177,7 @@ export async function POST(request: NextRequest) {
         // Start synchronization
         const { operation = 'full_sync', options = {} } = body
 
-        const [integration] = await db.select().from(userIntegrations)
+        const [integration] = await getDB().select().from(userIntegrations)
           .where(and(
             eq(userIntegrations.userId, userId),
             eq(userIntegrations.serviceName, serviceName)
@@ -241,7 +246,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update user integration
-    const [updatedIntegration] = await db.update(userIntegrations)
+    const [updatedIntegration] = await getDB().update(userIntegrations)
       .set({
         ...updates,
         updatedAt: new Date()
@@ -287,7 +292,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete user integration
-    const [deletedIntegration] = await db.delete(userIntegrations)
+    const [deletedIntegration] = await getDB().delete(userIntegrations)
       .where(and(
         eq(userIntegrations.id, integrationId),
         eq(userIntegrations.userId, userId)

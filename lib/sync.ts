@@ -1,5 +1,4 @@
 import { EventEmitter } from 'node:events'
-import { db } from './db'
 import {
   userRepository,
   taskRepository,

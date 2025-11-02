@@ -7,7 +7,7 @@ import { BaseIntegration, SyncResult, SyncConflict, ExternalTask, ExternalEvent,
 import { DataTransformer, ConflictDetector, RetryHandler, ValidationUtils } from './utils'
 import { UserIntegration, SyncOperation, SyncQueueItem, ExternalItem } from '../db/integrations-schema'
 import { taskRepository, calendarEventRepository } from '../data-access'
-import { db } from '../db'
+import { getDatabase } from '../db'
 import { and, eq, gt, lte, sql } from 'drizzle-orm'
 import { userIntegrations, externalItems } from '../db/integrations-schema'
 import { NotionIntegration } from './notion'
@@ -21,6 +21,11 @@ import { FastmailCalendarIntegration } from './fastmail'
 
 // Import Task and CalendarEvent from schema
 import type { Task, CalendarEvent } from '../db/schema'
+
+// Get database instance
+function getDB() {
+  return getDatabase()
+}
 
 interface SyncJob {
   id: string
@@ -582,7 +587,7 @@ export class SyncEngine {
     userIntegration: UserIntegration
   ): Promise<Task | null> {
     // Search by external ID first
-    const existing = await db.query.externalItems?.findFirst?.({
+    const existing = await getDB().query.externalItems?.findFirst?.({
       where: and(
         eq(externalItems.externalId, externalTask.id),
         eq(externalItems.externalService, userIntegration.serviceName),
@@ -607,7 +612,7 @@ export class SyncEngine {
     userIntegration: UserIntegration
   ): Promise<CalendarEvent | null> {
     // Search by external ID first
-    const existing = await db.query.externalItems?.findFirst?.({
+    const existing = await getDB().query.externalItems?.findFirst?.({
       where: and(
         eq(externalItems.externalId, externalEvent.id),
         eq(externalItems.externalService, userIntegration.serviceName),
@@ -795,7 +800,7 @@ export class SyncEngine {
     itemType: 'task' | 'event',
     itemId: string
   ): Promise<void> {
-    await db.insert(externalItems).values({
+    await getDB().insert(externalItems).values({
       userIntegrationId,
       externalId,
       externalService: '', // Would be determined from user integration
@@ -809,7 +814,7 @@ export class SyncEngine {
   }
 
   private async updateLastSyncTimestamp(userIntegrationId: string): Promise<void> {
-    await db.update(userIntegrations)
+    await getDB().update(userIntegrations)
       .set({ lastSyncAt: new Date(), syncStatus: 'idle' })
       .where(eq(userIntegrations.id, userIntegrationId))
   }
@@ -887,7 +892,7 @@ export class SyncEngine {
 
   private async updateExternalItemTracking(dayflowId: string, externalId: string): Promise<void> {
     // Update tracking to prefer DayFlow item
-    await db.update(externalItems)
+    await getDB().update(externalItems)
       .set({ lastSyncAt: new Date() })
       .where(eq(externalItems.itemId, dayflowId))
   }
