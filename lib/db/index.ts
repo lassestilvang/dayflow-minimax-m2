@@ -27,7 +27,6 @@ function initializeDatabase() {
   // @ts-ignore - Type compatibility issue between drizzle-orm and @neondatabase/serverless versions
   const db = drizzle(sql, {
     schema: { ...schema, ...integrationsSchema },
-    mode: 'default',
     logger: process.env.NODE_ENV === 'development'
   })
 

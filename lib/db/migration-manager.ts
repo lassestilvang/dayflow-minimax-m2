@@ -31,9 +31,8 @@ export class MigrationManager {
     this.connectionString = connectionString
     const sqlClient = neon(connectionString)
     // @ts-ignore - Type compatibility issue between drizzle-orm and @neondatabase/serverless versions
-    this.db = drizzle(sqlClient, { 
-      schema: {}, 
-      mode: 'default',
+    this.db = drizzle(sqlClient, {
+      schema: {},
       logger: process.env.NODE_ENV === 'development'
     })
   }
