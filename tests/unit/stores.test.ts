@@ -13,6 +13,7 @@ import {
 import { testUtils } from '@/tests/utils'
 import { calendarEventRepository, taskRepository, categoryRepository, tagRepository } from '@/lib/data-access'
 import { validateTaskFormData, validateEventFormData } from '@/lib/validations/schemas'
+import { completeEventOrTask, completeEvent, completeTask } from '@/tests/utils/complete-event-or-task-helper'
 import {
   getCurrentWeek,
   getPreviousWeek,
@@ -25,7 +26,6 @@ import {
   DEFAULT_VIEW_SETTINGS,
   createDefaultEvents
 } from '@/lib/date-utils'
-import { completeEventOrTask, completeEvent, completeTask } from '@/tests/utils/complete-event-or-task-helper'
 
 // Mock the dependencies
 vi.mock('@/lib/data-access', () => ({

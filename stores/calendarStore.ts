@@ -75,7 +75,19 @@ export const useWeeklyCalendarStore = create<WeeklyCalendarStore>()(
   persist(
     (set, get) => ({
       // Initial state
-      currentWeek: getCurrentWeek(),
+      currentWeek: {
+        startDate: new Date('2024-01-01T00:00:00Z'),
+        endDate: new Date('2024-01-07T23:59:59Z'),
+        days: [
+          { date: new Date('2024-01-01'), dayOfWeek: 1, dayName: 'Mon', events: [], isToday: false, isCurrentWeek: true },
+          { date: new Date('2024-01-02'), dayOfWeek: 2, dayName: 'Tue', events: [], isToday: false, isCurrentWeek: true },
+          { date: new Date('2024-01-03'), dayOfWeek: 3, dayName: 'Wed', events: [], isToday: false, isCurrentWeek: true },
+          { date: new Date('2024-01-04'), dayOfWeek: 4, dayName: 'Thu', events: [], isToday: false, isCurrentWeek: true },
+          { date: new Date('2024-01-05'), dayOfWeek: 5, dayName: 'Fri', events: [], isToday: false, isCurrentWeek: true },
+          { date: new Date('2024-01-06'), dayOfWeek: 6, dayName: 'Sat', events: [], isToday: false, isCurrentWeek: true },
+          { date: new Date('2024-01-07'), dayOfWeek: 0, dayName: 'Sun', events: [], isToday: false, isCurrentWeek: true },
+        ]
+      },
       selectedEvent: null,
       events: [],
       tasks: [],

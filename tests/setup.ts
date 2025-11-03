@@ -144,7 +144,7 @@ Object.defineProperty(window, 'crypto', {
 
 // Setup test database environment
 ;(process.env as any).NODE_ENV = 'test'
-;(process.env as any).DATABASE_URL = 'postgresql://test:test@localhost:5432/dayflow_test'
+;(process.env as any).DATABASE_URL = '' // Prevent database connections
 ;(process.env as any).TESTING = 'true'
 ;(process.env as any).MOCK_SERVICES = 'true'
 

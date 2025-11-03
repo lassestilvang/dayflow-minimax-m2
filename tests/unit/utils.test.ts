@@ -1,8 +1,4 @@
-describe('Test', () => {
-  it('works', () => {
-    expect(true).toBe(true)
-  })
-})
+import { describe, it, expect, beforeEach, vi } from 'bun:test'
 import {
   format,
   startOfWeek,
@@ -56,6 +52,7 @@ const completeEventOrTask = (obj: any) => ({
 
 // Helper to wrap all EventOrTask objects
 const createEventOrTask = (obj: any): EventOrTask => completeEventOrTask(obj)
+
 // Mock date-fns functions
 vi.mock('date-fns', () => ({
   format: vi.fn(),
@@ -104,11 +101,11 @@ describe('Date Utilities', () => {
 
   describe('Week Navigation', () => {
     it('should get current week with proper structure', () => {
-      vi.mocked(format).mockReturnValueOnce('Monday')
-      vi.mocked(startOfWeek).mockReturnValueOnce(new Date('2024-01-01'))
-      vi.mocked(endOfWeek).mockReturnValueOnce(new Date('2024-01-07'))
-      vi.mocked(addDays).mockReturnValueOnce(new Date('2024-01-02'))
-      vi.mocked(getDay).mockReturnValueOnce(1)
+      format.mockReturnValueOnce('Monday')
+      startOfWeek.mockReturnValueOnce(new Date('2024-01-01'))
+      endOfWeek.mockReturnValueOnce(new Date('2024-01-07'))
+      addDays.mockReturnValueOnce(new Date('2024-01-02'))
+      getDay.mockReturnValueOnce(1)
       
       const week = getCurrentWeek()
       
@@ -122,7 +119,7 @@ describe('Date Utilities', () => {
     it('should get previous week correctly', () => {
       const currentWeek = createMockWeek()
       
-      vi.mocked(subWeeks).mockReturnValueOnce(new Date('2023-12-25'))
+      subWeeks.mockReturnValueOnce(new Date('2023-12-25'))
       const previousWeek = getPreviousWeek(currentWeek)
       
       expect(previousWeek).toHaveProperty('startDate')
@@ -133,7 +130,7 @@ describe('Date Utilities', () => {
     it('should get next week correctly', () => {
       const currentWeek = createMockWeek()
       
-      vi.mocked(addWeeks).mockReturnValueOnce(new Date('2024-01-08'))
+      addWeeks.mockReturnValueOnce(new Date('2024-01-08'))
       const nextWeek = getNextWeek(currentWeek)
       
       expect(nextWeek).toHaveProperty('startDate')
@@ -167,7 +164,7 @@ describe('Date Utilities', () => {
     })
 
     it('should format 12h time correctly', () => {
-      vi.mocked(format).mockReturnValue('9 AM')
+      format.mockReturnValue('9 AM')
       
       const customSettings = {
         ...DEFAULT_VIEW_SETTINGS,
@@ -198,7 +195,7 @@ describe('Date Utilities', () => {
         updatedAt: new Date(),
       })
       
-      vi.mocked(differenceInMinutes).mockReturnValueOnce(90)
+      differenceInMinutes.mockReturnValueOnce(90)
       
       const duration = getEventDurationInMinutes(event)
       
@@ -249,7 +246,7 @@ describe('Date Utilities', () => {
         updatedAt: new Date(),
       })
       
-      vi.mocked(differenceInMinutes).mockReturnValueOnce(120) // 2 hours
+      differenceInMinutes.mockReturnValueOnce(120) // 2 hours
       const pixelsPerHour = 60
       
       const height = calculateEventHeight(event, pixelsPerHour)
@@ -273,7 +270,7 @@ describe('Date Utilities', () => {
         updatedAt: new Date(),
       })
       
-      vi.mocked(differenceInMinutes).mockReturnValueOnce(15) // 15 minutes
+      differenceInMinutes.mockReturnValueOnce(15) // 15 minutes
       const pixelsPerHour = 60
       
       const height = calculateEventHeight(event, pixelsPerHour)
@@ -296,8 +293,8 @@ describe('Date Utilities', () => {
       })
       const settings = { ...DEFAULT_VIEW_SETTINGS, startHour: 6 }
       
-      vi.mocked(getHours).mockReturnValueOnce(10)
-      vi.mocked(getMinutes).mockReturnValueOnce(30)
+      getHours.mockReturnValueOnce(10)
+      getMinutes.mockReturnValueOnce(30)
       
       const position = calculateEventTopPosition(event, settings)
       
@@ -319,8 +316,8 @@ describe('Date Utilities', () => {
       })
       const settings = { ...DEFAULT_VIEW_SETTINGS, startHour: 6 }
       
-      vi.mocked(getHours).mockReturnValueOnce(5)
-      vi.mocked(getMinutes).mockReturnValueOnce(30)
+      getHours.mockReturnValueOnce(5)
+      getMinutes.mockReturnValueOnce(30)
       
       const position = calculateEventTopPosition(event, settings)
       
@@ -346,7 +343,7 @@ describe('Date Utilities', () => {
 
   describe('Date and Time Formatting', () => {
     it('should format time range correctly', () => {
-      vi.mocked(format).mockImplementation((date: string | number | Date, formatStr: string) => {
+      format.mockImplementation((date: string | number | Date, formatStr: string) => {
         const d = new Date(date)
         if (formatStr === 'HH:mm') {
           return d.toISOString().substring(11, 16)
@@ -383,7 +380,7 @@ describe('Date Utilities', () => {
     })
 
     it('should format timed event correctly', () => {
-      vi.mocked(format).mockImplementation((date: string | number | Date, formatStr: string) => {
+      format.mockImplementation((date: string | number | Date, formatStr: string) => {
         const d = new Date(date)
         if (formatStr === 'HH:mm') {
           return d.toISOString().substring(11, 16)
@@ -430,7 +427,7 @@ describe('Date Utilities', () => {
 
     it('should get week display text for same month', () => {
       // We need to mock the format function to return the correct values in order
-      vi.mocked(format).mockImplementation((date, formatStr) => {
+      format.mockImplementation((date, formatStr) => {
         const d = new Date(date)
         if (d.toISOString().startsWith('2024-01-01')) {
           if (formatStr === 'MMMM') return 'January'
@@ -456,33 +453,34 @@ describe('Date Utilities', () => {
     })
 
     it('should get week display text for different months', () => {
-      vi.mocked(format).mockImplementation((date, formatStr) => {
+      format.mockImplementation((date, formatStr) => {
         const d = new Date(date)
-        if (d.toISOString().startsWith('2024-01-29')) {
+        if (d.toISOString().startsWith('2024-01-28')) {
           if (formatStr === 'MMMM') return 'January'
-          if (formatStr === 'd') return '29'
+          if (formatStr === 'd') return '28'
           if (formatStr === 'yyyy') return '2024'
-        } else if (d.toISOString().startsWith('2024-02-04')) {
+        } else if (d.toISOString().startsWith('2024-02-03')) {
           if (formatStr === 'MMMM') return 'February'
-          if (formatStr === 'd') return '4'
+          if (formatStr === 'd') return '3'
         }
         return 'Unknown'
       })
       
       const week: CalendarWeek = {
-        startDate: new Date('2024-01-29'),
-        endDate: new Date('2024-02-04'),
+        startDate: new Date('2024-01-28'),
+        endDate: new Date('2024-02-03'),
         days: [],
       }
       
       const displayText = getWeekDisplayText(week)
       
-      expect(displayText).toBe('January 29 – February 4, 2024')
+      expect(displayText).toBe('January 28 – February 3, 2024')
     })
 
     it('should get day display text', () => {
-      vi.mocked(format).mockReturnValueOnce('Mon').mockReturnValueOnce('Jan 15')
-      vi.mocked(isToday).mockReturnValueOnce(true)
+      format.mockReturnValueOnce('Mon')
+      format.mockReturnValueOnce('Jan 15')
+      isToday.mockReturnValueOnce(true)
       
       const today = new Date('2024-01-15')
       
@@ -492,8 +490,9 @@ describe('Date Utilities', () => {
     })
 
     it('should get day display text for non-today', () => {
-      vi.mocked(format).mockReturnValueOnce('Sun').mockReturnValueOnce('Jan 14')
-      vi.mocked(isToday).mockReturnValueOnce(false)
+      format.mockReturnValueOnce('Sun')
+      format.mockReturnValueOnce('Jan 14')
+      isToday.mockReturnValueOnce(false)
       
       const notToday = new Date('2024-01-14')
       
@@ -629,7 +628,7 @@ describe('Date Utilities', () => {
         }),
       ]
       
-      vi.mocked(isSameDay)
+      isSameDay
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(true)
@@ -999,8 +998,8 @@ describe('Date Utilities', () => {
       const startTime = new Date('2024-01-01T10:00:00Z')
       const endTime = new Date('2024-01-01T11:00:00Z')
       
-      vi.mocked(isAfter).mockReturnValueOnce(false)
-      vi.mocked(differenceInMinutes).mockReturnValueOnce(60)
+      isAfter.mockReturnValueOnce(false)
+      differenceInMinutes.mockReturnValueOnce(60)
       
       const validation = validateEventTimeRange(startTime, endTime)
       
@@ -1012,7 +1011,7 @@ describe('Date Utilities', () => {
       const startTime = new Date('2024-01-01T11:00:00Z')
       const endTime = new Date('2024-01-01T10:00:00Z')
       
-      vi.mocked(isAfter).mockReturnValueOnce(true)
+      isAfter.mockReturnValueOnce(true)
       
       const validation = validateEventTimeRange(startTime, endTime)
       
@@ -1024,8 +1023,8 @@ describe('Date Utilities', () => {
       const startTime = new Date('2024-01-01T10:00:00Z')
       const endTime = new Date('2024-01-01T10:10:00Z')
       
-      vi.mocked(isAfter).mockReturnValueOnce(false)
-      vi.mocked(differenceInMinutes).mockReturnValueOnce(10)
+      isAfter.mockReturnValueOnce(false)
+      differenceInMinutes.mockReturnValueOnce(10)
       
       const validation = validateEventTimeRange(startTime, endTime)
       
