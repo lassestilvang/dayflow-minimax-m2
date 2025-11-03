@@ -201,7 +201,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   tags: many(tags),
 }))
 
-// Export table types
+// Export table types first (before sql helper to avoid circular dependencies)
 export type User = typeof users.$inferSelect
 export type UserInsert = typeof users.$inferInsert
 export type Task = typeof tasks.$inferSelect
@@ -209,7 +209,13 @@ export type TaskInsert = typeof tasks.$inferInsert
 export type CalendarEvent = typeof calendarEvents.$inferSelect
 export type CalendarEventInsert = typeof calendarEvents.$inferInsert
 
-// Export tables object for drizzle
+// Export drizzle-orm types
+export type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
+
+// Helper function for SQL constraints - positioned after all other exports
+export const sql = (strings: TemplateStringsArray, ...values: any[]) => strings.join('')
+
+// Export Tables object for compatibility
 export const Tables = {
   users,
   tasks,
@@ -218,7 +224,4 @@ export const Tables = {
   tags,
   taskTags,
   eventTags,
-} as const
-
-// Helper function for SQL constraints
-const sql = (strings: TemplateStringsArray, ...values: any[]) => strings.join('')
+}

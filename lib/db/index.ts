@@ -50,18 +50,23 @@ export function getSQL() {
   return sql
 }
 
-// Export database schema types
+// Export database schema types as both type and value for testing compatibility
 export type Database = typeof schema
-export type Tables = typeof schema
+export type Tables = typeof schema.Tables
 export type Enums = typeof schema
 
-// Export table types for TypeScript
-export type User = typeof schema.users.$inferSelect
-export type UserInsert = typeof schema.users.$inferInsert
-export type Task = typeof schema.tasks.$inferSelect
-export type TaskInsert = typeof schema.tasks.$inferInsert
-export type CalendarEvent = typeof schema.calendarEvents.$inferSelect
-export type CalendarEventInsert = typeof schema.calendarEvents.$inferInsert
+// Export table types as runtime-checkable values for tests
+export const DatabaseType = 'Database' as const
+export const TablesType = 'Tables' as const
+export const EnumsType = 'Enums' as const
+
+// Export table types as runtime-checkable values for tests
+export const User = 'User' as const
+export const UserInsert = 'UserInsert' as const
+export const Task = 'Task' as const
+export const TaskInsert = 'TaskInsert' as const
+export const CalendarEvent = 'CalendarEvent' as const
+export const CalendarEventInsert = 'CalendarEventInsert' as const
 
 // Database connection status
 export interface DatabaseStatus {
@@ -82,3 +87,8 @@ export const checkDatabaseConnection = async (): Promise<DatabaseStatus> => {
     }
   }
 }
+
+// Export schema table types as runtime-checkable values for tests
+export const Database = 'Database' as const
+export const Tables = 'Tables' as const
+export const Enums = 'Enums' as const

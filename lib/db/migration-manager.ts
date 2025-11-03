@@ -38,7 +38,7 @@ export class MigrationManager {
   }
 
   // Load migrations from directory
-  private async loadMigrations(): Promise<Migration[]> {
+  async loadMigrations(): Promise<Migration[]> {
     const migrationsDir = path.join(process.cwd(), 'lib', 'db', 'migrations')
     const files = fs.readdirSync(migrationsDir)
       .filter(file => file.match(/^\d+_.*\.ts$/))
@@ -66,7 +66,7 @@ export class MigrationManager {
   }
 
   // Create migrations table if it doesn't exist
-  private async createMigrationsTable(): Promise<void> {
+  async createMigrationsTable(): Promise<void> {
     await this.db.execute(sql`
       CREATE TABLE IF NOT EXISTS migrations (
         id text PRIMARY KEY,

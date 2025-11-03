@@ -1,5 +1,5 @@
-import { vi } from 'bun:test'
-import type { Mock } from 'bun:test'
+import { vi } from 'vitest'
+import type { Mock } from 'vitest'
 
 // Mock utilities for external dependencies
 export const mockUtils = {

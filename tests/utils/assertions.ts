@@ -1,4 +1,4 @@
-import { vi } from 'bun:test'
+import { vi } from 'vitest'
 
 // Custom assertion utilities
 export const assertionUtils = {

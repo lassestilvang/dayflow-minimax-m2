@@ -223,3 +223,4 @@ export type ExternalItemInsert = typeof externalItems.$inferInsert
 
 export type IntegrationAuditLog = typeof integrationAuditLog.$inferSelect
 export type IntegrationAuditLogInsert = typeof integrationAuditLog.$inferInsert
+

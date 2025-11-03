@@ -1,4 +1,4 @@
-import { vi } from 'bun:test'
+import { vi } from 'vitest'
 
 // Test helper utilities
 export const helperUtils = {
@@ -477,3 +477,40 @@ export const helperUtils = {
     }
   },
 }
+
+// Individual exports for direct access
+export const {
+  waitFor,
+  waitForDOMChange,
+  createMockElement,
+  createMockForm,
+  createMockEvent,
+  createMockCustomEvent,
+  simulateClick,
+  simulateInput,
+  simulateKeyPress,
+  mockRouter,
+  mockSession,
+  createTestContext,
+  setupTimeouts,
+  setupIntervals,
+  cleanupTimers,
+  createDelayedPromise,
+  createDelayedRejection,
+  generateTestFilename,
+  createTestReport,
+  validateTestData,
+  createBenchmark,
+  mockHistory,
+  mockScreen,
+  createMockEnvironment,
+  createMockRequest,
+  createMockResponse,
+  createApiRouteContext,
+  createMockSession,
+  createRateLimiter,
+} = helperUtils
+
+// Legacy standalone exports for compatibility
+export const createMockEventStandalone = createMockEvent
+export const createMockCustomEventStandalone = createMockCustomEvent

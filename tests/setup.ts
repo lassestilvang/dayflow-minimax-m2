@@ -1,23 +1,71 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { TextEncoder, TextDecoder } from 'util'
+
+// Ensure vi is globally available
+;(global as any).vi = vi
+;(global as any).describe = describe
+;(global as any).it = it
+;(global as any).expect = expect
+
+// Add vi.mocked helper function to make mocks strongly typed
+;(global as any).vi.mocked = (mockFn: any) => mockFn
+
+// Add vi.doMock helper function for dynamic mocking
+;(global as any).vi.doMock = vi.mock
+
+// Add vi.importMock helper function for importing actual module
+;(global as any).vi.importMock = vi.mock
+
+// Add vi.importActual helper function for importing real modules
+;(global as any).vi.importActual = vi.importActual
 
 // Polyfills for Node.js environment
 ;(global as any).TextEncoder = TextEncoder
 ;(global as any).TextDecoder = TextDecoder
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-})
+// Safe window access with environment check
+if (typeof window === 'undefined') {
+  // Define window object for Node.js test environment
+  ;(global as any).window = {
+    matchMedia: vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+    crypto: {
+      randomUUID: vi.fn(() => 'mock-uuid'),
+      getRandomValues: vi.fn((array: Uint8Array) => {
+        for (let i = 0; i < array.length; i++) {
+          array[i] = Math.floor(Math.random() * 256)
+        }
+        return array
+      }),
+      subtle: {
+        digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      },
+    },
+  }
+} else {
+  // Mock window.matchMedia if running in browser-like environment
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+}
 
 // Mock IntersectionObserver
 ;(global as any).IntersectionObserver = vi.fn().mockImplementation(() => ({
@@ -70,33 +118,39 @@ const sessionStorageMock = {
 // Mock fetch
 ;(global as any).fetch = vi.fn()
 
-// Mock crypto with proper random function - ONLY for window.crypto, not global
-Object.defineProperty(window, 'crypto', {
-  value: {
-    randomUUID: vi.fn(() => 'mock-uuid'),
-    getRandomValues: vi.fn((array: Uint8Array) => {
-      for (let i = 0; i < array.length; i++) {
-        array[i] = Math.floor(Math.random() * 256)
-      }
-      return array
-    }),
-    subtle: {
-      digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-    },
-  },
-  writable: true,
-  configurable: true,
-})
-
-// Setup test database environment
+// Setup test database environment - DO NOT override in setup, let tests control
 ;(process.env as any).NODE_ENV = 'test'
-;(global as any).DATABASE_URL = 'postgresql://test:test@localhost:5432/testdb' // Mock DATABASE_URL for tests
-;(process.env as any).TESTING = 'true'
-;(process.env as any).MOCK_SERVICES = 'true'
+;(global as any).TESTING = 'true'
+;(global as any).MOCK_SERVICES = 'true'
 
-// Global test setup - REDUCED to avoid validation interference
+// Function to clear all require caches that might interfere with tests
+function clearRequireCache() {
+  const cacheKeys = Object.keys(require.cache)
+  cacheKeys.forEach(key => {
+    if (key.includes('/lib/db/') || 
+        key.includes('drizzle-orm') || 
+        key.includes('@neondatabase/serverless')) {
+      delete require.cache[key]
+    }
+  })
+}
+
+// Function to clear module mocks for database testing
+function clearDatabaseModuleMocks() {
+  // Clear vi.mock registry for database modules
+  const mockModules = ['drizzle-orm/neon-http', '@neondatabase/serverless']
+  mockModules.forEach(moduleName => {
+    const mockRegistry = (vi as any)._mockRegistry
+    if (mockRegistry) {
+      // Clear specific mocks from registry
+      delete mockRegistry[moduleName]
+    }
+  })
+}
+
+// Global test setup - ENHANCED for database testing
 beforeEach(() => {
-  // Only clear API/storage mocks, not all mocks to avoid validation interference
+  // Clear all API/storage mocks
   localStorageMock.getItem.mockReset()
   localStorageMock.setItem.mockReset()
   localStorageMock.removeItem.mockReset()
@@ -106,12 +160,21 @@ beforeEach(() => {
   sessionStorageMock.setItem.mockReset()
   sessionStorageMock.removeItem.mockReset()
   sessionStorageMock.clear.mockReset()
+
+  // Clear require cache for database modules
+  clearRequireCache()
+  
+  // Reset mocks
+  vi.clearAllMocks()
 })
 
 afterEach(() => {
   // MINIMAL cleanup - avoid clearing all mocks that might interfere with validation
   // Only clear specific mocks that we manage
   vi.clearAllMocks?.()
+  
+  // Clear require cache after each test
+  clearRequireCache()
 })
 
 // Extend expect matchers if needed
@@ -133,3 +196,6 @@ expect.extend({
     }
   },
 })
+
+// Export helper functions for use in tests
+export { clearRequireCache, clearDatabaseModuleMocks }
