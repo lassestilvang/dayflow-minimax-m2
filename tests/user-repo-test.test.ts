@@ -15,21 +15,7 @@ vi.mock('@/lib/db', async () => {
   }
 })
 
-// Mock validations
-vi.mock('@/lib/validations/schemas', () => ({
-  validateTaskData: vi.fn(() => ({ success: true })),
-  validateEventData: vi.fn(() => ({ success: true })),
-  validateUserData: vi.fn(() => ({ success: true })),
-  validateTaskInsertData: vi.fn(() => ({ success: true })),
-  validateEventInsertData: vi.fn(() => ({ success: true })),
-  taskInsertSchema: { safeParse: vi.fn(() => ({ success: true })) },
-  eventInsertSchema: { safeParse: vi.fn(() => ({ success: true })) },
-  userInsertSchema: { safeParse: vi.fn(() => ({ success: true })) },
-  taskUpdateSchema: { safeParse: vi.fn(() => ({ success: true })) },
-  eventUpdateSchema: { safeParse: vi.fn(() => ({ success: true })) },
-  taskFormDataSchema: { safeParse: vi.fn(() => ({ success: true })) },
-  eventFormDataSchema: { safeParse: vi.fn(() => ({ success: true })) }
-}))
+
 
 // Mock types
 vi.mock('@/types/database', () => ({

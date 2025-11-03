@@ -153,43 +153,83 @@ export const bulkEventUpdateSchema = z.object({
 
 // Validation utility functions
 export const validateTaskData = (data: unknown) => {
-  return taskSchema.safeParse(data)
+  try {
+    return taskSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateEventData = (data: unknown) => {
-  return calendarEventSchema.safeParse(data)
+  try {
+    return calendarEventSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateUserData = (data: unknown) => {
-  return userSchema.safeParse(data)
+  try {
+    return userSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateTaskInsertData = (data: unknown) => {
-  return taskInsertSchema.safeParse(data)
+  try {
+    return taskInsertSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateEventInsertData = (data: unknown) => {
-  return calendarEventInsertSchema.safeParse(data)
+  try {
+    return calendarEventInsertSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateUserInsertData = (data: unknown) => {
-  return userInsertSchema.safeParse(data)
+  try {
+    return userInsertSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateTaskUpdateData = (data: unknown) => {
-  return taskUpdateSchema.safeParse(data)
+  try {
+    return taskUpdateSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateEventUpdateData = (data: unknown) => {
-  return calendarEventUpdateSchema.safeParse(data)
+  try {
+    return calendarEventUpdateSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateTaskFormData = (data: unknown) => {
-  return taskFormDataSchema.safeParse(data)
+  try {
+    return taskFormDataSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 export const validateEventFormData = (data: unknown) => {
-  return calendarEventFormDataSchema.safeParse(data)
+  try {
+    return calendarEventFormDataSchema.safeParse(data)
+  } catch (error) {
+    return { success: false, error }
+  }
 }
 
 // Export type inference

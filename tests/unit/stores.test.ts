@@ -64,12 +64,7 @@ vi.mock('@/lib/data-access', () => ({
   NotFoundError: class NotFoundError extends Error {},
 }))
 
-vi.mock('@/lib/validations/schemas', () => ({
-  validateTaskFormData: vi.fn(),
-  validateEventFormData: vi.fn(),
-  validateTaskData: vi.fn(),
-  validateEventData: vi.fn(),
-}))
+
 
 vi.mock('@/lib/date-utils', () => ({
   getCurrentWeek: vi.fn(),
@@ -155,14 +150,18 @@ describe('Enhanced Calendar Store', () => {
   })
 
   describe('Event Management', () => {
-    beforeEach(() => {
-      // These are already mocked at the top of the file
-      (vi.fn()).mockReturnValue({ success: true })
-    })
-
     it('should add event successfully', async () => {
-      // Ensure validation always succeeds
-      (validateEventFormData as any).mockReturnValue({ success: true })
+      // Use valid event data that passes real validation
+      const eventDataValid = {
+        title: 'Test Event',
+        description: 'Test Description',
+        startTime: new Date('2024-01-01T10:00:00Z'),
+        endTime: new Date('2024-01-01T11:00:00Z'),
+        isAllDay: false,
+        userId: 'user-1',
+        recurrence: { type: 'none' },
+        reminder: { enabled: false, minutesBefore: 15 },
+      }
 
       const eventData = {
         title: 'Test Event',
@@ -245,10 +244,13 @@ describe('Enhanced Calendar Store', () => {
     })
 
     it('should handle validation error when adding event', async () => {
-      (validateEventFormData as any).mockReturnValue({
-        success: false,
-        error: { message: 'Invalid event data' }
-      })
+      // Use invalid event data that fails real validation
+      const eventDataInvalid = {
+        title: '', // Empty title should fail validation
+        startTime: new Date('2024-01-01T10:00:00Z'),
+        endTime: new Date('2024-01-01T11:00:00Z'),
+        userId: 'user-1',
+      }
 
       const eventData = {
         title: '',
@@ -264,13 +266,12 @@ describe('Enhanced Calendar Store', () => {
 
       expect(result).toBe(false)
       const error = useEnhancedCalendarStore.getState().error
-      expect(error).toContain('Invalid event data')
+      expect(error).toContain('Title is required')
     })
   })
 
   describe('Task Management', () => {
     beforeEach(() => {
-      validateTaskFormData.mockReturnValue({ success: true })
       taskRepository.create.mockResolvedValue({
         id: 'task-1',
         title: 'Test Task',

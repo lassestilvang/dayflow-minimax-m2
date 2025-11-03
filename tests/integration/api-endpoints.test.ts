@@ -167,11 +167,6 @@ vi.mock('@/lib/data-access', () => ({
   }
 }))
 
-vi.mock('@/lib/validations/schemas', () => ({
-  validateUserData: vi.fn().mockReturnValue({ success: true }),
-  validateTaskData: vi.fn().mockReturnValue({ success: true }),
-  validateEventData: vi.fn().mockReturnValue({ success: true }),
-}))
 
 // Import repositories and validators
 import {
@@ -309,9 +304,12 @@ describe('API Integration Tests', () => {
         const request = createMockRequest({
           method: 'POST',
           body: {
+            id: '123e4567-e89b-12d3-a456-426614174000',
             email: 'newuser@example.com',
             name: 'New User',
             workosId: 'workos_new123',
+            createdAt: new Date(),
+            updatedAt: new Date(),
           },
         })
 
@@ -324,24 +322,18 @@ describe('API Integration Tests', () => {
       })
 
       it('should reject invalid user data', async () => {
-        const mockUserRouteHandler = createUserRouteHandler()
-
-        // Mock validation failure
-        ;(validateUserData as any).mockReturnValue({
-          success: false,
-          error: { message: 'Invalid email format' }
-        })
-
+        // Test with invalid data that should fail validation
         const request = createMockRequest({
           method: 'POST',
           body: {
-            email: 'invalid-email',
+            email: 'invalid-email', // Invalid email format
             name: 'Test User',
           },
         })
 
         const response = createMockResponse()
 
+        const mockUserRouteHandler = createUserRouteHandler()
         await mockUserRouteHandler(request, response)
         expect(response.status).toHaveBeenCalledWith(400)
       })

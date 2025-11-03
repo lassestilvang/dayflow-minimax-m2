@@ -4,42 +4,6 @@ import { TextEncoder, TextDecoder } from 'util'
 ;(global as any).TextEncoder = TextEncoder
 ;(global as any).TextDecoder = TextDecoder
 
-// Mock Next.js router
-vi.mock('next/navigation', async () => {
-  const actual = await vi.importActual('next/navigation')
-  return {
-    ...actual,
-    useRouter: vi.fn(() => ({
-      push: vi.fn(),
-      replace: vi.fn(),
-      prefetch: vi.fn(),
-      back: vi.fn(),
-      forward: vi.fn(),
-      refresh: vi.fn(),
-    })),
-    useSearchParams: vi.fn(() => new URLSearchParams()),
-    usePathname: vi.fn(() => '/'),
-  }
-})
-
-// Mock Next.js hooks
-vi.mock('next/hooks', async () => {
-  const actual = await vi.importActual('next/hooks')
-  return {
-    ...actual,
-    useSession: vi.fn(() => ({
-      data: {
-        user: {
-          id: '1',
-          email: 'test@example.com',
-          name: 'Test User',
-        },
-      },
-      status: 'authenticated',
-    })),
-  }
-})
-
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -106,25 +70,7 @@ const sessionStorageMock = {
 // Mock fetch
 ;(global as any).fetch = vi.fn()
 
-// Mock crypto with proper random function
-Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: vi.fn(() => 'mock-uuid'),
-    getRandomValues: vi.fn((array: Uint8Array) => {
-      for (let i = 0; i < array.length; i++) {
-        array[i] = Math.floor(Math.random() * 256)
-      }
-      return array
-    }),
-    subtle: {
-      digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-    },
-  },
-  writable: true,
-  configurable: true,
-})
-
-// Mock window.crypto for E2E tests (separate from global crypto)
+// Mock crypto with proper random function - ONLY for window.crypto, not global
 Object.defineProperty(window, 'crypto', {
   value: {
     randomUUID: vi.fn(() => 'mock-uuid'),
@@ -144,16 +90,13 @@ Object.defineProperty(window, 'crypto', {
 
 // Setup test database environment
 ;(process.env as any).NODE_ENV = 'test'
-;(process.env as any).DATABASE_URL = '' // Prevent database connections
+;(global as any).DATABASE_URL = '' // Prevent database connections
 ;(process.env as any).TESTING = 'true'
 ;(process.env as any).MOCK_SERVICES = 'true'
 
-// Global test setup
+// Global test setup - REDUCED to avoid validation interference
 beforeEach(() => {
-  // Clear all mocks before each test
-  vi.clearAllMocks()
-  
-  // Reset localStorage and sessionStorage
+  // Only clear API/storage mocks, not all mocks to avoid validation interference
   localStorageMock.getItem.mockReset()
   localStorageMock.setItem.mockReset()
   localStorageMock.removeItem.mockReset()
@@ -166,8 +109,9 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  // Cleanup after each test
-  vi.restoreAllMocks()
+  // MINIMAL cleanup - avoid clearing all mocks that might interfere with validation
+  // Only clear specific mocks that we manage
+  vi.clearAllMocks?.()
 })
 
 // Extend expect matchers if needed
