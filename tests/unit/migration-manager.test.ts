@@ -555,7 +555,9 @@ describe('Migration Manager', () => {
         
         // Mock the fs module in the migration manager
         const originalFs = require.cache[require.resolve('fs')]?.exports
-        require.cache[require.resolve('fs')]?.exports = mockFsModule
+        if (require.cache[require.resolve('fs')]) {
+          require.cache[require.resolve('fs')].exports = mockFsModule
+        }
         
         // Clear and re-import the migration manager to pick up the mocked fs
         delete require.cache[require.resolve('../../lib/db/migration-manager')]
@@ -574,8 +576,8 @@ describe('Migration Manager', () => {
         
         // Restore
         process.cwd = originalCwd
-        if (originalFs) {
-          require.cache[require.resolve('fs')]?.exports = originalFs
+        if (originalFs && require.cache[require.resolve('fs')]) {
+          require.cache[require.resolve('fs')].exports = originalFs
         }
       })
 
@@ -591,7 +593,9 @@ describe('Migration Manager', () => {
         
         // Mock the fs module in the migration manager
         const originalFs = require.cache[require.resolve('fs')]?.exports
-        require.cache[require.resolve('fs')]?.exports = mockFsModule
+        if (require.cache[require.resolve('fs')]) {
+          require.cache[require.resolve('fs')].exports = mockFsModule
+        }
         
         // Clear and re-import the migration manager to pick up the mocked fs
         delete require.cache[require.resolve('../../lib/db/migration-manager')]
@@ -604,8 +608,8 @@ describe('Migration Manager', () => {
         expect(result.error).toBe('Permission denied')
         
         // Restore
-        if (originalFs) {
-          require.cache[require.resolve('fs')]?.exports = originalFs
+        if (originalFs && require.cache[require.resolve('fs')]) {
+          require.cache[require.resolve('fs')].exports = originalFs
         }
       })
     })

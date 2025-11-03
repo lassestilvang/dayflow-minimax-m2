@@ -4,30 +4,18 @@ describe('Database Configuration', () => {
   let originalEnv: NodeJS.ProcessEnv
   let dbIndex: any
 
-  function clearModuleCache() {
-    const requireCache = Object.keys(require.cache)
-    requireCache.forEach(key => {
-      if (key.includes('lib/db') || key.includes('drizzle-orm') || key.includes('@neondatabase')) {
-        delete require.cache[key]
-      }
-    })
-  }
-
   beforeEach(async () => {
     // Save original environment
     originalEnv = { ...process.env }
     
-    // Clear all database-related environment variables for fresh start
+    // Clear database environment variables for fresh start
     delete process.env.DATABASE_URL
     delete process.env.NODE_ENV
     
     // Clear all mocks to ensure clean state
     vi.clearAllMocks()
     
-    // Clear require cache to force fresh imports
-    clearModuleCache()
-    
-    // Import the database module fresh (should get real version now)
+    // Import fresh without clearing cache - let ES modules handle this
     dbIndex = await import('../../lib/db/index')
   })
 
@@ -37,14 +25,16 @@ describe('Database Configuration', () => {
     
     // Clear all mocks after each test
     vi.clearAllMocks()
-    
-    // Clear require cache after each test
-    clearModuleCache()
   })
 
   describe('Database Initialization', () => {
     it('should throw error when DATABASE_URL is not provided', async () => {
       const { getDatabase } = dbIndex
+      
+      // Clear cache to ensure fresh state
+      if (dbIndex.clearDatabaseCache) {
+        dbIndex.clearDatabaseCache()
+      }
       
       // Should throw error for missing DATABASE_URL
       expect(() => getDatabase()).toThrow('DATABASE_URL environment variable is required for database operations')
@@ -70,6 +60,11 @@ describe('Database Configuration', () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
       const { getDatabase } = dbIndex
+      
+      // Clear cache first
+      if (dbIndex.clearDatabaseCache) {
+        dbIndex.clearDatabaseCache()
+      }
       
       const db1 = getDatabase()
       const db2 = getDatabase()
@@ -152,47 +147,47 @@ describe('Database Configuration', () => {
     it('should export Database type', () => {
       // Type exports are available as runtime string constants
       expect(dbIndex.Database).toBeDefined()
-      expect(typeof dbIndex.Database).toBe('string')
+      expect(dbIndex.Database).toBe('Database')
     })
 
     it('should export Tables type', () => {
       expect(dbIndex.Tables).toBeDefined()
-      expect(typeof dbIndex.Tables).toBe('string')
+      expect(dbIndex.Tables).toBe('Tables')
     })
 
     it('should export Enums type', () => {
       expect(dbIndex.Enums).toBeDefined()
-      expect(typeof dbIndex.Enums).toBe('string')
+      expect(dbIndex.Enums).toBe('Enums')
     })
 
     it('should export User type', () => {
       expect(dbIndex.User).toBeDefined()
-      expect(typeof dbIndex.User).toBe('string')
+      expect(dbIndex.User).toBe('User')
     })
 
     it('should export UserInsert type', () => {
       expect(dbIndex.UserInsert).toBeDefined()
-      expect(typeof dbIndex.UserInsert).toBe('string')
+      expect(dbIndex.UserInsert).toBe('UserInsert')
     })
 
     it('should export Task type', () => {
       expect(dbIndex.Task).toBeDefined()
-      expect(typeof dbIndex.Task).toBe('string')
+      expect(dbIndex.Task).toBe('Task')
     })
 
     it('should export TaskInsert type', () => {
       expect(dbIndex.TaskInsert).toBeDefined()
-      expect(typeof dbIndex.TaskInsert).toBe('string')
+      expect(dbIndex.TaskInsert).toBe('TaskInsert')
     })
 
     it('should export CalendarEvent type', () => {
       expect(dbIndex.CalendarEvent).toBeDefined()
-      expect(typeof dbIndex.CalendarEvent).toBe('string')
+      expect(dbIndex.CalendarEvent).toBe('CalendarEvent')
     })
 
     it('should export CalendarEventInsert type', () => {
       expect(dbIndex.CalendarEventInsert).toBeDefined()
-      expect(typeof dbIndex.CalendarEventInsert).toBe('string')
+      expect(dbIndex.CalendarEventInsert).toBe('CalendarEventInsert')
     })
   })
 
@@ -231,6 +226,11 @@ describe('Database Configuration', () => {
       
       const { getDatabase } = dbIndex
       
+      // Clear cache first
+      if (dbIndex.clearDatabaseCache) {
+        dbIndex.clearDatabaseCache()
+      }
+      
       expect(() => getDatabase()).toThrow('DATABASE_URL environment variable is required for database operations')
     })
 
@@ -239,8 +239,13 @@ describe('Database Configuration', () => {
       
       const { getDatabase } = dbIndex
       
+      // Clear cache first
+      if (dbIndex.clearDatabaseCache) {
+        dbIndex.clearDatabaseCache()
+      }
+      
       // Should throw an error due to invalid URL format
-      expect(() => getDatabase()).toThrow()
+      expect(() => getDatabase()).toThrow(/Invalid DATABASE_URL format/)
     })
 
     it('should handle connection string validation', async () => {
@@ -248,7 +253,12 @@ describe('Database Configuration', () => {
       
       const { getDatabase } = dbIndex
       
-      expect(() => getDatabase()).toThrow()
+      // Clear cache first
+      if (dbIndex.clearDatabaseCache) {
+        dbIndex.clearDatabaseCache()
+      }
+      
+      expect(() => getDatabase()).toThrow(/DATABASE_URL must be a non-empty string|DATABASE_URL cannot be empty/)
     })
   })
 
@@ -319,6 +329,11 @@ describe('Database Configuration', () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
       const { getSQL } = dbIndex
+      
+      // Clear cache first
+      if (dbIndex.clearDatabaseCache) {
+        dbIndex.clearDatabaseCache()
+      }
       
       const sql1 = getSQL()
       const sql2 = getSQL()
