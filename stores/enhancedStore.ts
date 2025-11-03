@@ -253,7 +253,8 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
             
             const validation = validateEventFormData(eventToValidate)
             if (!validation.success) {
-              set({ error: validation.error?.message || 'Invalid event data' })
+              const errorMessage = validation.error instanceof Error ? validation.error.message : 'Invalid event data'
+              set({ error: errorMessage })
               return false
             }
 
@@ -313,7 +314,8 @@ export const useEnhancedCalendarStore = create<EnhancedCalendarStore>()(
           try {
             const validation = validateTaskFormData(taskData)
             if (!validation.success) {
-              set({ error: validation.error?.message || 'Invalid task data' })
+              const errorMessage = validation.error instanceof Error ? validation.error.message : 'Invalid task data'
+              set({ error: errorMessage })
               return false
             }
 

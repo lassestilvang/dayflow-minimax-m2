@@ -43,14 +43,15 @@ export async function POST(request: NextRequest) {
     const validation = validateTaskData(body)
     
     if (!validation.success) {
+      const errorMessage = validation.error instanceof Error ? validation.error.message : 'Validation failed'
       return NextResponse.json(
-        { error: 'Validation failed', message: validation.error?.message },
+        { error: 'Validation failed', message: errorMessage },
         { status: 400 }
       )
     }
 
     const task = await taskRepository.create({
-      ...validation.data,
+      ...(validation as any).data,
       userId
     })
     

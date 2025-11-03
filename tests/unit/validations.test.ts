@@ -30,7 +30,7 @@ describe('Validation Schemas', () => {
       const result = validateUserData(userData)
       
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(userData)
+      expect((result as any).data).toEqual(userData)
     })
 
     it('should reject invalid email', () => {
@@ -45,7 +45,7 @@ describe('Validation Schemas', () => {
       const result = validateUserData(userData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Invalid email address')
+      expect((result as any).error?.issues[0].message).toBe('Invalid email address')
     })
 
     it('should reject empty name', () => {
@@ -60,7 +60,7 @@ describe('Validation Schemas', () => {
       const result = validateUserData(userData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Name is required')
+      expect((result as any).error?.issues[0].message).toBe('Name is required')
     })
 
     it('should reject too long name', () => {
@@ -75,7 +75,7 @@ describe('Validation Schemas', () => {
       const result = validateUserData(userData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Name too long')
+      expect((result as any).error?.issues[0].message).toBe('Name too long')
     })
 
     it('should reject invalid image URL', () => {
@@ -91,7 +91,7 @@ describe('Validation Schemas', () => {
       const result = validateUserData(userData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Invalid image URL')
+      expect((result as any).error?.issues[0].message).toBe('Invalid image URL')
     })
 
     it('should reject invalid UUID', () => {
@@ -106,7 +106,7 @@ describe('Validation Schemas', () => {
       const result = validateUserData(userData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Invalid ID format')
+      expect((result as any).error?.issues[0].message).toBe('Invalid ID format')
     })
 
     it('should accept missing optional fields', () => {
@@ -120,7 +120,7 @@ describe('Validation Schemas', () => {
       const result = validateUserData(userData)
       
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(userData)
+      expect((result as any).data).toEqual(userData)
     })
   })
 
@@ -142,7 +142,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(taskData)
+      expect((result as any).data).toEqual(taskData)
     })
 
     it('should validate correct task form data', () => {
@@ -156,7 +156,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskFormData(taskFormData)
       
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(taskFormData)
+      expect((result as any).data).toEqual(taskFormData)
     })
 
     it('should reject empty title', () => {
@@ -174,7 +174,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Title is required')
+      expect((result as any).error?.issues[0].message).toBe('Title is required')
     })
 
     it('should reject too long title', () => {
@@ -191,7 +191,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Title too long')
+      expect((result as any).error?.issues[0].message).toBe('Title too long')
     })
 
     it('should reject too long description', () => {
@@ -209,7 +209,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Description too long')
+      expect((result as any).error?.issues[0].message).toBe('Description too long')
     })
 
     it('should reject invalid status', () => {
@@ -226,7 +226,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain('Invalid option')
+      expect((result as any).error?.issues[0].message).toContain('Invalid option')
     })
 
     it('should reject invalid priority', () => {
@@ -243,7 +243,7 @@ describe('Validation Schemas', () => {
       const result = validateTaskData(taskData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain('Invalid option')
+      expect((result as any).error?.issues[0].message).toContain('Invalid option')
     })
 
     it('should accept valid enum values', () => {
@@ -298,7 +298,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(eventData)
+      expect((result as any).data).toEqual(eventData)
     })
 
     it('should validate correct event form data', () => {
@@ -314,7 +314,7 @@ describe('Validation Schemas', () => {
       const result = validateEventFormData(eventFormData)
       
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(eventFormData)
+      expect((result as any).data).toEqual(eventFormData)
     })
 
     it('should reject empty title', () => {
@@ -332,7 +332,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Title is required')
+      expect((result as any).error?.issues[0].message).toBe('Title is required')
     })
 
     it('should reject end time before start time', () => {
@@ -350,7 +350,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('End time must be after start time')
+      expect((result as any).error?.issues[0].message).toBe('End time must be after start time')
     })
 
     it('should reject too long location', () => {
@@ -369,7 +369,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toBe('Location too long')
+      expect((result as any).error?.issues[0].message).toBe('Location too long')
     })
 
     it('should apply default isAllDay value', () => {
@@ -464,7 +464,7 @@ describe('Validation Schemas', () => {
       const result = validateEventData(eventData)
       
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain('Invalid input')
+      expect((result as any).error?.issues[0].message).toContain('Invalid input')
     })
   })
 
@@ -504,7 +504,7 @@ describe('Validation Schemas', () => {
       expect(result).toHaveProperty('success')
       expect(result).toHaveProperty('error')
       expect(typeof result.success).toBe('boolean')
-      expect(typeof result.error).toBe('object')
+      expect(typeof (result as any).error).toBe('object')
     })
   })
 })

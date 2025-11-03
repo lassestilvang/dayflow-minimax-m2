@@ -9,14 +9,15 @@ export async function POST(request: NextRequest) {
     // Validate request body
     const validation = validateUserData(body)
     if (!validation.success) {
+      const errorMessage = validation.error instanceof Error ? validation.error.message : 'Validation failed'
       return NextResponse.json(
-        { error: 'Validation failed', message: validation.error?.message },
+        { error: 'Validation failed', message: errorMessage },
         { status: 400 }
       )
     }
 
     // Create user
-    const user = await userRepository.create(validation.data)
+    const user = await userRepository.create((validation as any).data)
     
     return NextResponse.json(user, { status: 201 })
   } catch (error) {

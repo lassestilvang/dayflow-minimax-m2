@@ -43,8 +43,9 @@ export async function POST(request: NextRequest) {
     const validation = validateEventData(body)
     
     if (!validation.success) {
+      const errorMessage = validation.error instanceof Error ? validation.error.message : 'Validation failed'
       return NextResponse.json(
-        { error: 'Validation failed', message: validation.error?.message },
+        { error: 'Validation failed', message: errorMessage },
         { status: 400 }
       )
     }
@@ -52,13 +53,13 @@ export async function POST(request: NextRequest) {
     // Check for conflicts
     const conflicts = await calendarEventRepository.findConflicts(
       userId,
-      validation.data.startTime,
-      validation.data.endTime
+      (validation as any).data.startTime,
+      (validation as any).data.endTime
     )
 
     // Create the event (conflicts are handled by the client)
     const event = await calendarEventRepository.create({
-      ...validation.data,
+      ...(validation as any).data,
       userId
     })
     
