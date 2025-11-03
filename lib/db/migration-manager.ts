@@ -24,8 +24,8 @@ export interface MigrationStatus {
 
 // Database migration manager
 export class MigrationManager {
-  private db: any
-  private connectionString: string
+  public readonly connectionString: string
+  public readonly db: any
 
   constructor(connectionString: string) {
     this.connectionString = connectionString
@@ -274,15 +274,9 @@ export const down = async (db: any) => {
     try {
       const versionResult = await this.db
         .select({ version: sql`version()` })
-        .from(sql`version()`
-
-        )
 
       const uptimeResult = await this.db
         .select({ uptime: sql`EXTRACT(EPOCH FROM (now() - pg_postmaster_start_time()))` })
-        .from(sql`pg_postmaster_start_time()`
-
-        )
 
       const connectionsResult = await this.db
         .select({ count: sql`count(*)` })
@@ -357,7 +351,17 @@ export const migrationManager = new Proxy({} as MigrationManager, {
         migrationManagerInstance = createMigrationManager()
       } catch (error) {
         // Return a mock object for testing when DATABASE_URL is not available
-        return (...args: any[]) => Promise.resolve({ success: false, error: 'Database not configured' })
+        const mockObj: any = {
+          migrate: () => Promise.resolve({ success: false, error: 'Database not configured' }),
+          getMigrationStatus: () => Promise.resolve([]),
+          reset: () => Promise.resolve({ success: false, error: 'Database not configured' }),
+          generateMigration: () => Promise.resolve({ success: false, error: 'Database not configured' }),
+          checkHealth: () => Promise.resolve({ connected: false, error: 'Database not configured' }),
+          getDatabaseInfo: () => Promise.resolve({ tables: [], indexes: [], size: '0 bytes' }),
+          connectionString: undefined,
+          db: undefined
+        }
+        return mockObj[prop]
       }
     }
     return (migrationManagerInstance as any)[prop]

@@ -19,6 +19,15 @@ import { TextEncoder, TextDecoder } from 'util'
 // Add vi.importActual helper function for importing real modules
 ;(global as any).vi.importActual = vi.importActual
 
+// Add vi.unmock helper function for unmocking modules
+;(global as any).vi.unmock = vi.unmock || ((moduleName: string) => {
+  // Clear the mock from registry
+  const mockRegistry = (vi as any)._mockRegistry
+  if (mockRegistry && mockRegistry[moduleName]) {
+    delete mockRegistry[moduleName]
+  }
+})
+
 // Polyfills for Node.js environment
 ;(global as any).TextEncoder = TextEncoder
 ;(global as any).TextDecoder = TextDecoder
@@ -127,9 +136,11 @@ const sessionStorageMock = {
 function clearRequireCache() {
   const cacheKeys = Object.keys(require.cache)
   cacheKeys.forEach(key => {
-    if (key.includes('/lib/db/') || 
-        key.includes('drizzle-orm') || 
-        key.includes('@neondatabase/serverless')) {
+    if (key.includes('/lib/db/') ||
+        key.includes('drizzle-orm') ||
+        key.includes('@neondatabase/serverless') ||
+        key.includes('migration-manager') ||
+        key.includes('/tests/unit/')) {
       delete require.cache[key]
     }
   })
@@ -146,6 +157,15 @@ function clearDatabaseModuleMocks() {
       delete mockRegistry[moduleName]
     }
   })
+  // Also clear migration manager mocks
+  const migrationMockRegistry = (vi as any)._mockRegistry
+  if (migrationMockRegistry) {
+    Object.keys(migrationMockRegistry).forEach(key => {
+      if (key.includes('migration-manager') || key.includes('/lib/db/migration-manager')) {
+        delete migrationMockRegistry[key]
+      }
+    })
+  }
 }
 
 // Global test setup - ENHANCED for database testing
@@ -161,20 +181,33 @@ beforeEach(() => {
   sessionStorageMock.removeItem.mockReset()
   sessionStorageMock.clear.mockReset()
 
-  // Clear require cache for database modules
+  // Clear require cache for database modules - MORE AGGRESSIVE
   clearRequireCache()
   
-  // Reset mocks
+  // Clear database module mocks
+  clearDatabaseModuleMocks()
+  
+  // Reset ALL mocks to ensure clean slate
   vi.clearAllMocks()
+  
+  // Reset all test-related environment variables that might interfere
+  delete process.env.DATABASE_URL
+  delete process.env.NODE_ENV
 })
 
 afterEach(() => {
-  // MINIMAL cleanup - avoid clearing all mocks that might interfere with validation
-  // Only clear specific mocks that we manage
-  vi.clearAllMocks?.()
+  // Clear ALL mocks to ensure clean slate between tests
+  vi.clearAllMocks()
   
-  // Clear require cache after each test
+  // Clear require cache after each test - MORE AGGRESSIVE
   clearRequireCache()
+  
+  // Clear database module mocks after each test
+  clearDatabaseModuleMocks()
+  
+  // Reset environment variables
+  delete process.env.DATABASE_URL
+  delete process.env.NODE_ENV
 })
 
 // Extend expect matchers if needed

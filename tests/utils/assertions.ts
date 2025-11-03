@@ -15,8 +15,9 @@ export const assertionUtils = {
 
   // Check if string is a valid email
   toBeValidEmail(received: string) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const pass = emailRegex.test(received)
+    // More comprehensive email regex that handles edge cases
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+    const pass = emailRegex.test(received) && !received.includes('..') && !received.startsWith('.') && !received.endsWith('.')
     return {
       pass,
       message: pass
@@ -27,6 +28,14 @@ export const assertionUtils = {
 
   // Check if object has required properties
   toHaveRequiredProperties(received: any, required: string[]) {
+    // Handle null/undefined primitives
+    if (received === null || received === undefined || typeof received !== 'object') {
+      return {
+        pass: false,
+        message: `expected object to have properties ${required.join(', ')}, but received ${typeof received}`,
+      }
+    }
+    
     const missing = required.filter(prop => !received.hasOwnProperty(prop))
     const pass = missing.length === 0
     return {

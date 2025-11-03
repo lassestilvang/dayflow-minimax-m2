@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { clearRequireCache, clearDatabaseModuleMocks } from '../setup'
 
+// Force clear any module mocks that might interfere with this test file
+vi.unmock('../../lib/db/index')
+
 describe('Database Configuration', () => {
   let originalEnv: NodeJS.ProcessEnv
   let dbIndex: any
-  let mockDrizzle: any
-  let mockNeon: any
 
   beforeEach(async () => {
     // Save original environment
@@ -15,29 +16,14 @@ describe('Database Configuration', () => {
     delete process.env.DATABASE_URL
     delete process.env.NODE_ENV
     
-    // Create fresh mocks for each test
-    mockDrizzle = {
-      insert: vi.fn(),
-      select: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      transaction: vi.fn(),
-    }
-    
-    mockNeon = vi.fn().mockImplementation(() => ({
-      query: vi.fn().mockResolvedValue([{ '?column?': 1 }]),
-    }))
-    
     // Clear all mocks to ensure clean state
     vi.clearAllMocks()
     
-    // Clear database module mocks
+    // Clear database module mocks and require cache to force fresh imports
     clearDatabaseModuleMocks()
-    
-    // Clear require cache to force fresh imports
     clearRequireCache()
     
-    // Import fresh module
+    // Import the database module fresh (should get unmocked version now)
     dbIndex = await import('../../lib/db/index')
   })
 
@@ -182,38 +168,48 @@ describe('Database Configuration', () => {
 
   describe('Type Exports', () => {
     it('should export Database type', () => {
+      // Type exports are available as runtime string constants
+      expect(dbIndex.Database).toBeDefined()
       expect(typeof dbIndex.Database).toBe('string')
     })
 
     it('should export Tables type', () => {
+      expect(dbIndex.Tables).toBeDefined()
       expect(typeof dbIndex.Tables).toBe('string')
     })
 
     it('should export Enums type', () => {
+      expect(dbIndex.Enums).toBeDefined()
       expect(typeof dbIndex.Enums).toBe('string')
     })
 
     it('should export User type', () => {
+      expect(dbIndex.User).toBeDefined()
       expect(typeof dbIndex.User).toBe('string')
     })
 
     it('should export UserInsert type', () => {
+      expect(dbIndex.UserInsert).toBeDefined()
       expect(typeof dbIndex.UserInsert).toBe('string')
     })
 
     it('should export Task type', () => {
+      expect(dbIndex.Task).toBeDefined()
       expect(typeof dbIndex.Task).toBe('string')
     })
 
     it('should export TaskInsert type', () => {
+      expect(dbIndex.TaskInsert).toBeDefined()
       expect(typeof dbIndex.TaskInsert).toBe('string')
     })
 
     it('should export CalendarEvent type', () => {
+      expect(dbIndex.CalendarEvent).toBeDefined()
       expect(typeof dbIndex.CalendarEvent).toBe('string')
     })
 
     it('should export CalendarEventInsert type', () => {
+      expect(dbIndex.CalendarEventInsert).toBeDefined()
       expect(typeof dbIndex.CalendarEventInsert).toBe('string')
     })
   })
