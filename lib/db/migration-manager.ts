@@ -347,5 +347,19 @@ export const runMigrations = async (command: string, options: any = {}) => {
   }
 }
 
-// Export singleton instance
-export const migrationManager = createMigrationManager()
+// Export singleton instance (lazy initialization to prevent module load errors)
+let migrationManagerInstance: MigrationManager | null = null
+
+export const migrationManager = new Proxy({} as MigrationManager, {
+  get(target, prop) {
+    if (!migrationManagerInstance) {
+      try {
+        migrationManagerInstance = createMigrationManager()
+      } catch (error) {
+        // Return a mock object for testing when DATABASE_URL is not available
+        return (...args: any[]) => Promise.resolve({ success: false, error: 'Database not configured' })
+      }
+    }
+    return (migrationManagerInstance as any)[prop]
+  }
+})

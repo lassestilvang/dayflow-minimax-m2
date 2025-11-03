@@ -90,7 +90,7 @@ Object.defineProperty(window, 'crypto', {
 
 // Setup test database environment
 ;(process.env as any).NODE_ENV = 'test'
-;(global as any).DATABASE_URL = '' // Prevent database connections
+;(global as any).DATABASE_URL = 'postgresql://test:test@localhost:5432/testdb' // Mock DATABASE_URL for tests
 ;(process.env as any).TESTING = 'true'
 ;(process.env as any).MOCK_SERVICES = 'true'
 
