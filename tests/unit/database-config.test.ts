@@ -1,12 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { clearRequireCache, clearDatabaseModuleMocks } from '../setup'
-
-// Force clear any module mocks that might interfere with this test file
-vi.unmock('../../lib/db/index')
 
 describe('Database Configuration', () => {
   let originalEnv: NodeJS.ProcessEnv
   let dbIndex: any
+
+  function clearModuleCache() {
+    const requireCache = Object.keys(require.cache)
+    requireCache.forEach(key => {
+      if (key.includes('lib/db') || key.includes('drizzle-orm') || key.includes('@neondatabase')) {
+        delete require.cache[key]
+      }
+    })
+  }
 
   beforeEach(async () => {
     // Save original environment
@@ -19,11 +24,10 @@ describe('Database Configuration', () => {
     // Clear all mocks to ensure clean state
     vi.clearAllMocks()
     
-    // Clear database module mocks and require cache to force fresh imports
-    clearDatabaseModuleMocks()
-    clearRequireCache()
+    // Clear require cache to force fresh imports
+    clearModuleCache()
     
-    // Import the database module fresh (should get unmocked version now)
+    // Import the database module fresh (should get real version now)
     dbIndex = await import('../../lib/db/index')
   })
 
@@ -35,30 +39,22 @@ describe('Database Configuration', () => {
     vi.clearAllMocks()
     
     // Clear require cache after each test
-    clearRequireCache()
+    clearModuleCache()
   })
 
   describe('Database Initialization', () => {
     it('should throw error when DATABASE_URL is not provided', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      
-      // Clear cache and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       
       // Should throw error for missing DATABASE_URL
       expect(() => getDatabase()).toThrow('DATABASE_URL environment variable is required for database operations')
-      
-      consoleSpy.mockRestore()
     })
 
     it('should initialize database successfully with valid DATABASE_URL', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       process.env.NODE_ENV = 'development'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       
       const db = getDatabase()
       
@@ -73,9 +69,7 @@ describe('Database Configuration', () => {
     it('should return cached instance on subsequent calls', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       
       const db1 = getDatabase()
       const db2 = getDatabase()
@@ -86,9 +80,7 @@ describe('Database Configuration', () => {
     it('should handle lazy initialization correctly', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase, getSQL } = await import('../../lib/db/index')
+      const { getDatabase, getSQL } = dbIndex
       
       // Call getDatabase - should trigger initialization
       getDatabase()
@@ -102,9 +94,7 @@ describe('Database Configuration', () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       process.env.NODE_ENV = 'development'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       getDatabase()
       
       // Check that database was initialized
@@ -115,9 +105,7 @@ describe('Database Configuration', () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       process.env.NODE_ENV = 'production'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       getDatabase()
       
       // Check that database was initialized
@@ -129,9 +117,7 @@ describe('Database Configuration', () => {
     it('should return connected status when connection is successful', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { checkDatabaseConnection } = await import('../../lib/db/index')
+      const { checkDatabaseConnection } = dbIndex
       
       const result = await checkDatabaseConnection()
       
@@ -142,9 +128,7 @@ describe('Database Configuration', () => {
     it('should return disconnected status when connection fails', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { checkDatabaseConnection } = await import('../../lib/db/index')
+      const { checkDatabaseConnection } = dbIndex
       
       const result = await checkDatabaseConnection()
       
@@ -155,9 +139,7 @@ describe('Database Configuration', () => {
     it('should handle unknown errors gracefully', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { checkDatabaseConnection } = await import('../../lib/db/index')
+      const { checkDatabaseConnection } = dbIndex
       
       const result = await checkDatabaseConnection()
       
@@ -247,9 +229,7 @@ describe('Database Configuration', () => {
     it('should handle missing environment variable gracefully', async () => {
       delete process.env.DATABASE_URL
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       
       expect(() => getDatabase()).toThrow('DATABASE_URL environment variable is required for database operations')
     })
@@ -257,9 +237,7 @@ describe('Database Configuration', () => {
     it('should handle invalid database URL', async () => {
       process.env.DATABASE_URL = 'invalid-url'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       
       // Should throw an error due to invalid URL format
       expect(() => getDatabase()).toThrow()
@@ -268,9 +246,7 @@ describe('Database Configuration', () => {
     it('should handle connection string validation', async () => {
       process.env.DATABASE_URL = ''
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       
       expect(() => getDatabase()).toThrow()
     })
@@ -287,9 +263,7 @@ describe('Database Configuration', () => {
       for (const url of testUrls) {
         process.env.DATABASE_URL = url
         
-        // Clear and re-import fresh
-        clearRequireCache()
-        const { getDatabase } = await import('../../lib/db/index')
+        const { getDatabase } = dbIndex
         const db = getDatabase()
         
         expect(db).toBeDefined()
@@ -300,9 +274,7 @@ describe('Database Configuration', () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       process.env.NODE_ENV = 'development'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       getDatabase()
       
       // Check that database was initialized
@@ -313,9 +285,7 @@ describe('Database Configuration', () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       process.env.NODE_ENV = 'production'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       getDatabase()
       
       // Check that database was initialized
@@ -326,9 +296,7 @@ describe('Database Configuration', () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       delete process.env.NODE_ENV
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getDatabase } = await import('../../lib/db/index')
+      const { getDatabase } = dbIndex
       getDatabase()
       
       // Check that database was initialized
@@ -340,9 +308,7 @@ describe('Database Configuration', () => {
     it('should provide access to SQL instance', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getSQL } = await import('../../lib/db/index')
+      const { getSQL } = dbIndex
       
       const sql = getSQL()
       
@@ -352,9 +318,7 @@ describe('Database Configuration', () => {
     it('should cache SQL instance', async () => {
       process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb'
       
-      // Clear and re-import fresh
-      clearRequireCache()
-      const { getSQL } = await import('../../lib/db/index')
+      const { getSQL } = dbIndex
       
       const sql1 = getSQL()
       const sql2 = getSQL()
