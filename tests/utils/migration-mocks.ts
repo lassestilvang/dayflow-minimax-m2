@@ -207,7 +207,7 @@ export class MigrationImportMockFactory {
     defaultMigrations.forEach(migrationName => {
       const id = migrationName.split('_')[0]
       const name = migrationName.substring(migrationName.indexOf('_') + 1)
-      const module = createMigration(id, name)
+      const migrationModule = createMigration(id, name)
       
       // Register with multiple path patterns
       const paths = [
@@ -218,7 +218,7 @@ export class MigrationImportMockFactory {
       ]
       
       paths.forEach(path => {
-        this.migrationModules.set(path, module)
+        this.migrationModules.set(path, migrationModule)
       })
     })
   }
@@ -248,9 +248,9 @@ export class MigrationImportMockFactory {
 
       // Try to extract filename and match
       const filename = normalizedPath.split('/').pop() || ''
-      for (const [key, module] of this.migrationModules.entries()) {
+      for (const [key, migrationModule] of this.migrationModules.entries()) {
         if (key.endsWith(filename)) {
-          return { ...module } // Return a copy to avoid test interference
+          return { ...migrationModule } // Return a copy to avoid test interference
         }
       }
 
@@ -279,15 +279,15 @@ export class MigrationImportMockFactory {
     })
   }
 
-  public addMigration(name: string, module: any) {
-    this.migrationModules.set(name, module)
+  public addMigration(name: string, migrationModule: any) {
+    this.migrationModules.set(name, migrationModule)
   }
 
   public reset() {
     this.mockImport.mockClear()
-    this.migrationModules.forEach(module => {
-      if (module.up) module.up.mockClear()
-      if (module.down) module.down.mockClear()
+    this.migrationModules.forEach(migrationModule => {
+      if (migrationModule.up) migrationModule.up.mockClear()
+      if (migrationModule.down) migrationModule.down.mockClear()
     })
   }
 
