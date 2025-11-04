@@ -10,25 +10,25 @@ describe('Migration Manager', () => {
 
   // Test that core functions exist and are callable
   it('should export migration manager functions', () => {
-    const module = require('../../lib/db/migration-manager')
+    const migrationModule = require('../../lib/db/migration-manager')
     
-    expect(typeof module.MigrationManager).toBe('function')
-    expect(typeof module.createMigrationManager).toBe('function')
-    expect(typeof module.runMigrations).toBe('function')
-    expect(module.migrationManager).toBeDefined()
+    expect(typeof migrationModule.MigrationManager).toBe('function')
+    expect(typeof migrationModule.createMigrationManager).toBe('function')
+    expect(typeof migrationModule.runMigrations).toBe('function')
+    expect(migrationModule.migrationManager).toBeDefined()
   })
 
   // Test Migration interface exists (type-only check)
   it('should export Migration interface', () => {
     // This test primarily checks that the interface is available for TypeScript compilation
-    const module = require('../../lib/db/migration-manager')
-    expect(module).toBeDefined()
+    const migrationModule = require('../../lib/db/migration-manager')
+    expect(migrationModule).toBeDefined()
   })
 
   // Test MigrationStatus interface exists (type-only check)
   it('should export MigrationStatus interface', () => {
     // This test primarily checks that the interface is available for TypeScript compilation
-    const module = require('../../lib/db/migration-manager')
-    expect(module).toBeDefined()
+    const migrationModule = require('../../lib/db/migration-manager')
+    expect(migrationModule).toBeDefined()
   })
 })
